@@ -1,0 +1,125 @@
+[project]
+name = "fastweb"
+version = "0.1.0"
+description = "One of the best scaffolds for Python web development."
+readme = "README.md"
+keywords = [
+  "fastapi",
+  "scaffold",
+  "sqlmodel",
+  "tools",
+  "web",
+]
+license = "MIT"
+maintainers = [
+  { name = "tyvekZhang", email = "tyvekzhang@gmail.com" },
+]
+authors = [
+  { name = "tyvekZhang", email = "tyvekzhang@gmail.com" },
+]
+requires-python = ">=3.9"
+classifiers = [
+  "Development Status :: 4 - Beta",
+  "Programming Language :: Python",
+  "Programming Language :: Python :: 3 :: Only",
+  "Programming Language :: Python :: 3.9",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Programming Language :: Python :: Implementation :: CPython",
+  "Programming Language :: Python :: Implementation :: PyPy",
+]
+dependencies = [
+  "aiosqlite>=0.21",
+  "alembic>=1.15.2",
+  "asgi-correlation-id>=4.3.4",
+  "cryptography>=45.0.6",
+  "diskcache>=5.6.3",
+  "fastapi[standard]>=0.115.12",
+  "loguru>=0.7.3",
+  "openpyxl>=3.1.5",
+  "pandas>=2.2.3",
+  "passlib[bcrypt]>=1.7.4",
+  "pyjwt>=2.10.1",
+  "sqlmodel>=0.0.24",
+]
+
+[dependency-groups]
+dev = [
+  "coverage>=7.8",
+  "httpx>=0.28.1",
+  "pre-commit>=4.2",
+  "pytest>=8.3.5",
+  "pytest-asyncio>=1.1",
+]
+
+docs = [
+  "sphinx>=7.2.6",
+  "sphinx-rtd-theme>=2",
+]
+
+[tool.ruff]
+line-length = 88
+
+include = [ "main.py", "src/**/*.py" ]
+exclude = [ "doc/**/*.py" ]
+
+lint.select = [
+  "B",  # flake8-bugbear
+  "C4", # flake8-comprehensions
+  "E",  # pycodestyle errors
+  "F",  # pyflakes
+  "I",  # isort
+  "UP", # pyupgrade
+  "W",  # pycodestyle warnings
+]
+lint.ignore = [
+  "B008", # do not perform function calls in argument defaults
+  "C901", # too complex
+  "E501", # line too long, handled by black
+  "W191", # indentation contains tabs
+]
+lint.isort.known-third-party = [
+  "aiosqlite",
+  "alembic",
+  "diskcache",
+  "fastapi",
+  "loguru",
+  "openpyxl",
+  "pandas",
+  "passlib",
+  "pyjwt",
+  "sqlmodel",
+  "starlette",
+  "pydantic",
+  "bcrypt",
+  "cryptography",
+]
+# Preserve types, even if a file imports `from __future__ import annotations`.
+lint.pyupgrade.keep-runtime-typing = true
+
+[tool.coverage.run]
+parallel = true
+data_file = "coverage/.coverage"
+source = [ "src/main/app", "src/tests", "main.py" ]
+context = '${CONTEXT}'
+dynamic_context = "test_function"
+omit = [
+]
+
+[tool.coverage.report]
+fail_under = 90
+show_missing = true
+sort = "-Cover"
+
+[tool.coverage.html]
+show_contexts = true
+
+[tool.mypy]
+strict = true
+
+[[tool.uv.index]]
+name = "aliyun"
+url = "https://mirrors.aliyun.com/pypi/simple/"
+default = true

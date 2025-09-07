@@ -13,6 +13,8 @@ from typing import Any, Optional
 from asgi_correlation_id import correlation_id
 from loguru import logger
 
+from fastlib.config.config_manager import load_config
+
 
 class Logger:
     """
@@ -21,6 +23,7 @@ class Logger:
     This class provides a unified interface for logging with automatic
     correlation ID binding and comprehensive error tracking.
     """
+    config = load_config()
 
     def __init__(self, log_dir: str = "/var/log", max_retention_days: int = 30, 
                  app_name: str = "app", enable_console: bool = True):
@@ -294,7 +297,7 @@ class Logger:
 
 
 # Create default instance (optional)
-logger = Logger()
+log = Logger()
 
 # Alternatively, you can create instances as needed:
-# logger = Logger(log_dir="my_logs", app_name="myapp", max_retention_days=7)
+# log = Logger(log_dir="my_logs", app_name="myapp", max_retention_days=7)

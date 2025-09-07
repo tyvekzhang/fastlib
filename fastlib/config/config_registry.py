@@ -130,24 +130,3 @@ class ConfigRegistry:
         """Clear both registry and instances."""
         cls._registry.clear()
         cls._instances.clear()
-
-
-# Decorator for easy registration
-def config_class(name: str):
-    """
-    Decorator to register a configuration class.
-
-    Args:
-        name: The name to register the configuration under
-
-    Usage:
-        @config_class("my_config")
-        class MyConfig(BaseConfig):
-            pass
-    """
-
-    def decorator(cls: Type[BaseConfig]):
-        ConfigRegistry.register(name, cls)
-        return cls
-
-    return decorator

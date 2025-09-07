@@ -5,7 +5,7 @@ from typing import Any, Generic, Optional, TypeVar, Union
 
 from pydantic import BaseModel, model_serializer
 
-from src.main.app.libs.enums import ExceptionCode
+from fastlib.enums import ExceptionCode
 
 # Define generic type variables for response data
 DataType = TypeVar("DataType")

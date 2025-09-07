@@ -6,7 +6,7 @@ from contextlib import asynccontextmanager
 from sqlalchemy.ext.asyncio import create_async_engine
 from sqlmodel.ext.asyncio.session import AsyncSession
 
-from src.main.app.libs.config import config_manager
+from fastlib.config import config_manager
 
 try:
     from sqlalchemy.ext.asyncio import async_sessionmaker

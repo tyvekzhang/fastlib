@@ -9,11 +9,11 @@ from loguru import logger
 from starlette.responses import JSONResponse
 
 from src.main.app.enums.auth_error_code import AuthErrorCode
-from src.main.app.libs import constant, security
-from src.main.app.libs.config import config_manager
-from src.main.app.libs.context.contextvars import current_user_id
-from src.main.app.libs.enums.enum import MediaTypeEnum
-from src.main.app.libs.schema import UserCredential
+from fastlib import constant, security
+from fastlib.config import config_manager
+from fastlib.context.contextvars import current_user_id
+from fastlib.enums.enum import MediaTypeEnum
+from fastlib.schema import UserCredential
 
 # Load configuration
 server_config = config_manager.load_server_config()

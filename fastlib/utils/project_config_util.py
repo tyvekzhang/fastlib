@@ -10,9 +10,9 @@ from urllib.parse import urlparse
 
 from loguru import logger
 
-from src.main.app.libs.enums.enum import DBTypeEnum
-from src.main.app.libs.utils import file_util
-from src.main.app.libs.utils.file_util import get_resource_dir
+from fastlib.enums.enum import DBTypeEnum
+from fastlib.utils import file_util
+from fastlib.utils.file_util import get_resource_dir
 
 try:
     import tomllib

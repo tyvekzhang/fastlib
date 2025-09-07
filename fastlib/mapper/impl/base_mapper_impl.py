@@ -8,11 +8,11 @@ from pydantic import BaseModel
 from sqlmodel import SQLModel, and_, delete, func, insert, select, update
 from sqlmodel.ext.asyncio.session import AsyncSession
 
-from src.main.app.libs.constant import FilterOperators, constant
-from src.main.app.libs.enums import SortEnum
-from src.main.app.libs.mapper.base_mapper import BaseMapper
-from src.main.app.libs.middleware.db_session_middleware import db
-from src.main.app.libs.schema import SortItem
+from fastlib.constant import FilterOperators, constant
+from fastlib.enums import SortEnum
+from fastlib.mapper.base_mapper import BaseMapper
+from fastlib.middleware.db_session_middleware import db
+from fastlib.schema import SortItem
 
 IDType = TypeVar("IDType", int, str)
 ModelType = TypeVar("ModelType", bound=SQLModel)

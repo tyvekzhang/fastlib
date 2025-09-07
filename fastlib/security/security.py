@@ -9,8 +9,8 @@ from fastapi.security import OAuth2PasswordBearer
 from jwt.exceptions import InvalidTokenError
 from passlib.context import CryptContext
 
-from src.main.app.libs.config.config_manager import load_config
-from src.main.app.libs.schema import CurrentUser
+from fastlib.config.config_manager import load_config
+from fastlib.schema import CurrentUser
 
 # Configuration
 config = load_config()

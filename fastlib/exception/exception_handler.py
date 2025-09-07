@@ -15,9 +15,9 @@ from loguru import logger
 from pydantic_core._pydantic_core import ValidationError  # noqa
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
-from src.main.app.libs.config.config_manager import load_config
-from src.main.app.libs.enums.enum import CommonErrorCode
-from src.main.app.libs.exception import HTTPException
+from fastlib.config.config_manager import load_config
+from fastlib.enums.enum import CommonErrorCode
+from fastlib.exception import HTTPException
 
 config = load_config()
 

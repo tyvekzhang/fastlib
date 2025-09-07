@@ -3,7 +3,7 @@
 
 from enum import Enum
 
-from src.main.app.libs.enums import ExceptionCode
+from fastlib.enums import ExceptionCode
 
 
 class SortEnum(str, Enum):

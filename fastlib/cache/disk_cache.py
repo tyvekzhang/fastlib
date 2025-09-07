@@ -8,7 +8,7 @@ import threading
 from typing import Any, Dict, List, Optional, Union
 import diskcache
 
-from src.main.app.libs.cache.base_cache import Cache, CacheError
+from fastlib.cache.base_cache import Cache, CacheError
 
 
 class PageCache(Cache):

@@ -8,7 +8,7 @@ from sqlalchemy import BigInteger, DateTime, Integer
 from sqlmodel import Field
 from sqlmodel import SQLModel as _SQLModel
 
-from src.main.app.libs.utils.snowflake_util import snowflake_id
+from fastlib.utils.snowflake_util import snowflake_id
 
 
 class BaseModel(_SQLModel):

@@ -4,9 +4,9 @@
 import os
 from typing import Optional
 
-from src.main.app.libs.config.config_registry import BaseConfig
-from src.main.app.libs.utils import project_config_util
-from src.main.app.libs.utils.project_config_util import get_sqlite_db_path
+from fastlib.config.config_registry import BaseConfig
+from fastlib.utils import project_config_util
+from fastlib.utils.project_config_util import get_sqlite_db_path
 
 
 class DatabaseConfig(BaseConfig):

@@ -1,9 +1,9 @@
 # SPDX-License-Identifier: MIT
 """Cache Client manager to instantiate the appropriate cache client"""
 
-from src.main.app.libs.cache.base_cache import Cache
-from src.main.app.libs.cache.redis_cache import RedisManager
-from src.main.app.libs.config.config_manager import load_config
+from fastlib.cache.base_cache import Cache
+from fastlib.cache.redis_cache import RedisManager
+from fastlib.config.config_manager import load_config
 
 
 async def get_cache_client() -> Cache:
@@ -15,11 +15,11 @@ async def get_cache_client() -> Cache:
 
     config = load_config()
     if config.database.enable_redis:
-        from src.main.app.libs.cache.redis_cache import RedisCache
+        from fastlib.cache.redis_cache import RedisCache
 
         redis_client = await RedisManager.get_instance()
         return RedisCache(redis_client)
     else:
-        from src.main.app.libs.cache.disk_cache import PageCache
+        from fastlib.cache.disk_cache import PageCache
 
         return PageCache()

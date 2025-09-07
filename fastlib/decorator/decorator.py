@@ -4,9 +4,9 @@
 import functools
 from typing import Any, Callable, Type
 
-from src.main.app.libs.config.config_registry import BaseConfig, ConfigRegistry
-from src.main.app.libs.i18n.i18n_context import I18nContextManager
-from src.main.app.libs.i18n.i18n_types import Language
+from fastlib.config.config_registry import BaseConfig, ConfigRegistry
+from fastlib.i18n.i18n_context import I18nContextManager
+from fastlib.i18n.i18n_types import Language
 
 
 # Decorator for easy registration

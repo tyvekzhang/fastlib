@@ -1,8 +1,8 @@
 # SPDX-License-Identifier: MIT
 """Server configuration for the application."""
 
-from src.main.app.libs.config.config_registry import BaseConfig
-from src.main.app.libs.utils.project_config_util import ProjectInfo
+from fastlib.config.config_registry import BaseConfig
+from fastlib.utils.project_config_util import ProjectInfo
 
 
 class ServerConfig(BaseConfig):

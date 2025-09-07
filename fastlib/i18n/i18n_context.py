@@ -5,7 +5,7 @@ Internationalization Context Manager
 import contextvars
 from typing import Optional, Any
 
-from src.main.app.libs.i18n.i18n_types import Language
+from fastlib.i18n.i18n_types import Language
 
 
 

@@ -9,7 +9,7 @@ from typing import Any, Dict, List, Optional, Union
 
 from loguru import logger
 
-from src.main.app.libs.cache.base_cache import Cache, CacheError
+from fastlib.cache.base_cache import Cache, CacheError
 
 try:
     import redis.asyncio as redis
@@ -25,7 +25,7 @@ except Exception:
     redis = None
     RedisError = Exception
 
-from src.main.app.libs.config.config_manager import load_config
+from fastlib.config.config_manager import load_config
 
 
 class RedisCache(Cache):

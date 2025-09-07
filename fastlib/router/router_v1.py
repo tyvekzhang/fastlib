@@ -15,7 +15,7 @@ from typing import  Set
 from fastapi import APIRouter
 from loguru import logger
 
-from src.main.app.libs.utils import str_util
+from fastlib.utils import str_util
 
 # Constants
 DEFAULT_API_VERSION = "/v1"

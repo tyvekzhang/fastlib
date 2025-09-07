@@ -5,13 +5,13 @@ import os
 from functools import lru_cache
 from typing import Optional
 
-from src.main.app.libs import constant
-from src.main.app.libs.config.config import Config
-from src.main.app.libs.config.config_loader import ConfigLoader
-from src.main.app.libs.config.config_registry import BaseConfig, ConfigRegistry
-from src.main.app.libs.config.database_config import DatabaseConfig
-from src.main.app.libs.config.security_config import SecurityConfig
-from src.main.app.libs.config.server_config import ServerConfig
+from fastlib import constant
+from fastlib.config.config import Config
+from fastlib.config.config_loader import ConfigLoader
+from fastlib.config.config_registry import BaseConfig, ConfigRegistry
+from fastlib.config.database_config import DatabaseConfig
+from fastlib.config.security_config import SecurityConfig
+from fastlib.config.server_config import ServerConfig
 
 config: Config
 

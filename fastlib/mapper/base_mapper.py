@@ -9,7 +9,7 @@ from pydantic import BaseModel
 from sqlmodel import SQLModel
 from sqlmodel.ext.asyncio.session import AsyncSession
 
-from src.main.app.libs.schema import SortItem
+from fastlib.schema import SortItem
 
 ModelType = TypeVar("ModelType", bound=SQLModel)
 SchemaType = TypeVar("SchemaType", bound=BaseModel)

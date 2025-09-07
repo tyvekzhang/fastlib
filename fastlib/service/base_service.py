@@ -6,7 +6,7 @@ from typing import Dict, Generic, TypeVar
 
 from sqlmodel import SQLModel
 
-from src.main.app.libs.schema import SortItem
+from fastlib.schema import SortItem
 
 T = TypeVar("T", bound=SQLModel)
 IDType = TypeVar("IDType", int, str)

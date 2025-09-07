@@ -6,7 +6,7 @@ from typing import Dict
 
 from sqlalchemy.ext.asyncio import AsyncEngine, create_async_engine
 
-from src.main.app.libs.config import config_manager
+from fastlib.config import config_manager
 
 # Global engine cache with thread safety
 _engine_map: Dict[str, AsyncEngine] = {}

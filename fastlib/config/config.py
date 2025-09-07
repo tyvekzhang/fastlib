@@ -3,10 +3,10 @@
 
 from typing import Any, Dict, Optional
 
-from src.main.app.libs.config.config_registry import BaseConfig, ConfigRegistry
-from src.main.app.libs.config.database_config import DatabaseConfig
-from src.main.app.libs.config.security_config import SecurityConfig
-from src.main.app.libs.config.server_config import ServerConfig
+from fastlib.config.config_registry import BaseConfig, ConfigRegistry
+from fastlib.config.database_config import DatabaseConfig
+from fastlib.config.security_config import SecurityConfig
+from fastlib.config.server_config import ServerConfig
 
 
 class Config:

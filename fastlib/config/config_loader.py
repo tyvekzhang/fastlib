@@ -6,7 +6,7 @@ from typing import Dict
 
 import yaml
 
-from src.main.app.libs import constant
+from fastlib import constant
 
 
 class ConfigLoader:

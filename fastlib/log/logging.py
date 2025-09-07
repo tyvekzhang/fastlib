@@ -196,7 +196,7 @@ class Logger:
             tb_list = traceback.extract_tb(exc_info.__traceback__)
             for tb in tb_list:
                 stack_trace.append(
-                    f"  File: {tb.filename}, "
+                    f"File: {tb.filename}, "
                     f"Line: {tb.lineno}, "
                     f"Function: {tb.name}"
                 )

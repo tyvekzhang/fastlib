@@ -5,9 +5,9 @@ from typing import Dict, Generic, TypeVar
 
 from pydantic import BaseModel
 
-from src.main.app.libs.mapper.impl.base_mapper_impl import SqlModelMapper
-from src.main.app.libs.schema import SortItem
-from src.main.app.libs.service.base_service import BaseService
+from fastlib.mapper.impl.base_mapper_impl import SqlModelMapper
+from fastlib.schema import SortItem
+from fastlib.service.base_service import BaseService
 
 T = TypeVar("T", bound=BaseModel)
 M = TypeVar("M", bound=SqlModelMapper)

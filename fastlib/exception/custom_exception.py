@@ -3,7 +3,7 @@
 
 from typing import Any, Optional
 
-from src.main.app.libs.enums import ExceptionCode
+from fastlib.enums import ExceptionCode
 
 
 class HTTPException(Exception):

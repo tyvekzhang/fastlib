@@ -3,7 +3,7 @@
 
 import os
 
-from src.main.app.libs.config.config_registry import BaseConfig
+from fastlib.config.config_registry import BaseConfig
 
 
 class SecurityConfig(BaseConfig):

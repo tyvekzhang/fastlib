@@ -8,7 +8,7 @@ from typing import Dict, Any, Optional
 from fastapi import FastAPI
 from loguru import logger
 
-from fastlib.config.config_manager import ConfigManager
+from fastlib.config.manager import ConfigManager
 
 
 @asynccontextmanager

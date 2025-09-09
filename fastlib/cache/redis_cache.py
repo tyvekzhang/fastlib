@@ -25,7 +25,7 @@ except Exception:
     redis = None
     RedisError = Exception
 
-from fastlib.config.config_manager import load_config
+from fastlib.config.manager import load_config
 
 
 class RedisCache(Cache):

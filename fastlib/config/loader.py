@@ -2,7 +2,7 @@
 """ConfigLoader class for loading and managing application configurations from YAML files."""
 
 import os
-from typing import Dict
+from typing import dict, Optional
 
 import yaml
 
@@ -10,7 +10,7 @@ from fastlib import constant
 
 
 class ConfigLoader:
-    def __init__(self, env: str, base_config_file: str = None) -> None:
+    def __init__(self, env: str, base_config_file: Optional[str] = None) -> None:
         """
         Initializes a new instance of the ConfigLoader class
 
@@ -30,7 +30,7 @@ class ConfigLoader:
         self.env = env
 
     @staticmethod
-    def load_yaml_file(file_path) -> Dict:
+    def load_yaml_file(file_path: str) -> dict:
         """
         Load a YAML file and return its contents as a dictionary.
 
@@ -38,33 +38,33 @@ class ConfigLoader:
             file_path (str): The path to the YAML file to be loaded.
 
         Returns:
-            Dict: The contents of the YAML file as a dictionary.
+            dict: The contents of the YAML file as a dictionary.
         """
         with open(file_path, encoding="utf-8") as file:
             return yaml.safe_load(file)
 
-    def merge_dicts(self, base_dict, override_dict) -> Dict:
+    def _merge_dicts(self, base_dict: dict, override_dict: dict) -> dict:
         """
         Merge two dictionaries, with values from the override_dict taking precedence.
 
         Args:
-            base_dict (Dict): The base dictionary to merge values into.
-            override_dict (Dict): The dictionary containing values to override.
+            base_dict (dict): The base dictionary to merge values into.
+            override_dict (dict): The dictionary containing values to override.
 
         Returns:
-            Dict: The merged dictionary.
+            dict: The merged dictionary.
         """
         if override_dict is None:
             return base_dict
         for key, value in override_dict.items():
             if isinstance(value, dict) and key in base_dict:
                 # If the value is a dictionary, recursively merge it
-                base_dict[key] = self.merge_dicts(base_dict[key], value)
+                base_dict[key] = self._merge_dicts(base_dict[key], value)
             else:
                 base_dict[key] = value
         return base_dict
 
-    def load_config(self, environment: str = None) -> Dict:
+    def load_config(self, environment: str = None) -> dict:
         """
         Load the base configuration file and merge it with environment-specific settings if available.
 
@@ -73,7 +73,7 @@ class ConfigLoader:
                                           If None, defaults to the instance's environment.
 
         Returns:
-            Dict: The final merged configuration.
+            dict: The final merged configuration.
         """
         self.config = self.load_yaml_file(self.base_config_file)
         if self.default_flag:
@@ -86,6 +86,6 @@ class ConfigLoader:
             )
             if os.path.exists(env_config_path):
                 env_config = self.load_yaml_file(env_config_path)
-                self.config = self.merge_dicts(self.config, env_config)
+                self.config = self._merge_dicts(self.config, env_config)
 
         return self.config

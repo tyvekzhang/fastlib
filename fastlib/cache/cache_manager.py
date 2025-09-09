@@ -3,7 +3,7 @@
 
 from fastlib.cache.base_cache import Cache
 from fastlib.cache.redis_cache import RedisManager
-from fastlib.config.config_manager import load_config
+from fastlib.config.manager import ConfigManager
 
 
 async def get_cache_client() -> Cache:
@@ -13,8 +13,8 @@ async def get_cache_client() -> Cache:
         Cache: Redis client if Redis is enabled in config, otherwise returns page cache.
     """
 
-    config = load_config()
-    if config.database.enable_redis:
+    config = ConfigManager.get_database_config()
+    if config.enable_redis:
         from fastlib.cache.redis_cache import RedisCache
 
         redis_client = await RedisManager.get_instance()

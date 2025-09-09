@@ -10,14 +10,14 @@ from starlette.responses import JSONResponse
 
 from src.main.app.enums.auth_error_code import AuthErrorCode
 from fastlib import constant, security
-from fastlib.config import config_manager
+from fastlib.config import manager
 from fastlib.context.contextvars import current_user_id
 from fastlib.enums.enum import MediaTypeEnum
 from fastlib.schema import UserCredential
 
 # Load configuration
-server_config = config_manager.load_server_config()
-security_config = config_manager.load_security_config()
+server_config = manager.load_server_config()
+security_config = manager.load_security_config()
 
 
 async def jwt_middleware(request: Request, call_next):

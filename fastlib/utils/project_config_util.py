@@ -3,6 +3,7 @@
 """Alembic configuration parser"""
 
 import configparser
+from functools import lru_cache
 import os.path
 from pathlib import Path
 from typing import Dict, NamedTuple, Optional
@@ -153,6 +154,7 @@ class ProjectInfo:
         self.description = description or ""
         self.authors = authors or []
 
+    @lru_cache
     @classmethod
     def from_pyproject(cls, pyproject_path: str = "pyproject.toml") -> "ProjectInfo":
         """

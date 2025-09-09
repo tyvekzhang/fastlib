@@ -6,7 +6,7 @@ from typing import Dict
 
 from sqlalchemy.ext.asyncio import AsyncEngine, create_async_engine
 
-from fastlib.config import config_manager
+from fastlib.config import manager
 
 # Global engine cache with thread safety
 _engine_map: Dict[str, AsyncEngine] = {}
@@ -23,7 +23,7 @@ def get_async_engine() -> AsyncEngine:
         AsyncEngine: Configured SQLAlchemy async engine based on application config.
     """
     global async_engine
-    database_config = config_manager.load_config().database
+    database_config = manager.load_config().database
     if database_config.dialect.lower() == "sqlite":
         async_engine = create_async_engine(
             url=database_config.url,

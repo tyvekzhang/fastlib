@@ -1,11 +1,10 @@
-from .config_manager import (
-    load_database_config,
-    load_security_config,
-    load_server_config,
+from .config import BaseConfig
+from .manager import (
+    ConfigManager, config_class
 )
 
 __all__ = [
-    load_server_config,
-    load_database_config,
-    load_security_config,
+    "BaseConfig",
+    "ConfigManager",
+    "config_class"
 ]

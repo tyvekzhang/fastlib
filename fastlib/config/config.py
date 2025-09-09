@@ -1,12 +1,27 @@
 # SPDX-License-Identifier: MIT
 """Application Configuration with dynamic registry support."""
 
+from abc import ABC, abstractmethod
 from typing import Any, Dict, Optional
 
-from fastlib.config.config_registry import BaseConfig, ConfigRegistry
+from fastlib.config.config_registry import ConfigRegistry
 from fastlib.config.database_config import DatabaseConfig
 from fastlib.config.security_config import SecurityConfig
 from fastlib.config.server_config import ServerConfig
+
+
+class BaseConfig(ABC):
+    """Abstract base class for all configuration classes."""
+
+    @abstractmethod
+    def __init__(self, **kwargs):
+        """Initialize configuration with keyword arguments."""
+        pass
+
+    @abstractmethod
+    def __str__(self) -> str:
+        """Return string representation of the configuration."""
+        pass
 
 
 class Config:
@@ -110,27 +125,6 @@ class Config:
             List of configuration names
         """
         return list(self._config_instances.keys())
-
-    def reload_config(self, name: str, config_data: Dict[str, Any]) -> bool:
-        """
-        Reload a specific configuration with new data.
-
-        Args:
-            name: The name of the configuration to reload
-            config_data: New configuration data
-
-        Returns:
-            True if successful, False otherwise
-        """
-        try:
-            instance = ConfigRegistry.create_instance(name, {name: config_data})
-            if instance:
-                self._config_instances[name] = instance
-                setattr(self, name, instance)
-                return True
-        except Exception as e:
-            print(f"Failed to reload {name} config: {e}")
-        return False
 
     def __str__(self) -> str:
         """

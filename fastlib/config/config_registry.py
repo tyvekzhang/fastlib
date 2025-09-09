@@ -1,32 +1,29 @@
 # SPDX-License-Identifier: MIT
 """Configuration registry for dynamic configuration class management."""
 
-from abc import ABC, abstractmethod
 from typing import Any, Dict, Optional, Type
 
+# Import BaseConfig from config module to avoid circular imports
+from typing import TYPE_CHECKING
 
-class BaseConfig(ABC):
-    """Abstract base class for all configuration classes."""
-
-    @abstractmethod
-    def __init__(self, **kwargs):
-        """Initialize configuration with keyword arguments."""
-        pass
-
-    @abstractmethod
-    def __str__(self) -> str:
-        """Return string representation of the configuration."""
-        pass
+if TYPE_CHECKING:
+    from fastlib.config.config import BaseConfig
+else:
+    try:
+        from fastlib.config.config import BaseConfig
+    except ImportError:
+        # Fallback for cases where BaseConfig hasn't been defined yet
+        BaseConfig = object
 
 
 class ConfigRegistry:
     """Registry for managing configuration classes dynamically."""
 
-    _registry: Dict[str, Type[BaseConfig]] = {}
-    _instances: Dict[str, BaseConfig] = {}
+    _registry: Dict[str, Type] = {}
+    _instances: Dict[str, Any] = {}
 
     @classmethod
-    def register(cls, name: str, config_class: Type[BaseConfig]) -> None:
+    def register(cls, name: str, config_class: Type) -> None:
         """
         Register a configuration class.
 
@@ -35,13 +32,16 @@ class ConfigRegistry:
             config_class: The configuration class to register
 
         Raises:
-            ValueError: If name is already registered or config_class is not a BaseConfig subclass
+            ValueError: If name is already registered
         """
         if name in cls._registry:
             raise ValueError(f"Configuration '{name}' is already registered")
 
-        if not issubclass(config_class, BaseConfig):
-            raise ValueError("Configuration class must inherit from BaseConfig")
+        # Check if BaseConfig is available and if config_class inherits from it
+        if hasattr(config_class, '__bases__'):
+            from fastlib.config.config import BaseConfig
+            if not issubclass(config_class, BaseConfig):
+                raise ValueError("Configuration class must inherit from BaseConfig")
 
         cls._registry[name] = config_class
 
@@ -57,7 +57,7 @@ class ConfigRegistry:
         cls._instances.pop(name, None)
 
     @classmethod
-    def get_config_class(cls, name: str) -> Optional[Type[BaseConfig]]:
+    def get_config_class(cls, name: str) -> Optional[Type]:
         """
         Get a registered configuration class.
 
@@ -72,7 +72,7 @@ class ConfigRegistry:
     @classmethod
     def create_instance(
         cls, name: str, config_dict: Dict[str, Any]
-    ) -> Optional[BaseConfig]:
+    ) -> Optional[Any]:
         """
         Create an instance of a registered configuration class.
 
@@ -98,7 +98,7 @@ class ConfigRegistry:
             raise ValueError(f"Failed to create {name} config instance: {e}")
 
     @classmethod
-    def get_instance(cls, name: str) -> Optional[BaseConfig]:
+    def get_instance(cls, name: str) -> Optional[Any]:
         """
         Get a cached configuration instance.
 

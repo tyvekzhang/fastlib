@@ -2,7 +2,7 @@
 """ConfigLoader class for loading and managing application configurations from YAML files."""
 
 import os
-from typing import dict, Optional
+from typing import Optional
 
 import yaml
 

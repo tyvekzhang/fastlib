@@ -156,7 +156,7 @@ class ProjectInfo:
 
     @lru_cache
     @classmethod
-    def from_pyproject(cls, pyproject_path: str = "pyproject.toml") -> "ProjectInfo":
+    def from_pyproject(cls, pyproject_path: str = "") -> "ProjectInfo":
         """
         Load project information from a pyproject.toml file.
 
@@ -166,7 +166,10 @@ class ProjectInfo:
         Returns:
             ProjectInfo: An instance containing project metadata.
         """
-        path = Path(pyproject_path)
+        if not pyproject_path:
+            pyproject_path = file_util.find_project_root()
+        else:
+            path = Path(pyproject_path)
         if not path.exists():
             raise FileNotFoundError(f"{pyproject_path} does not exist")
 

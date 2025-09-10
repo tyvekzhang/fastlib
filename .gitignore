@@ -166,5 +166,6 @@ cython_debug/
 /.vscode
 
 **/htmlcov
-/src/main/resource/alembic/db/fast_web.db
-/src/log/
+
+*.egg-info/
+

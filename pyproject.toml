@@ -1,13 +1,12 @@
 [project]
-name = "fastweb"
-version = "0.1.0"
-description = "One of the best scaffolds for Python web development."
+name = "fastlib-py"
+version = "0.1.1"
+description = "Fastlib, high performance, easy to use, fast to code, ready for production"
 readme = "README.md"
 keywords = [
   "fastapi",
-  "scaffold",
+  "library",
   "sqlmodel",
-  "tools",
   "web",
 ]
 license = "MIT"
@@ -59,10 +58,13 @@ docs = [
   "sphinx-rtd-theme>=2",
 ]
 
-[tool.ruff]
-line-length = 88
+[project.urls]
+Homepage = "https://github.com/tyvekzhang/fastlib"
 
-include = [ "main.py", "src/**/*.py" ]
+[tool.ruff]
+line-length = 120
+
+include = [ "main.py", "fastlib/**/*.py" ]
 exclude = [ "doc/**/*.py" ]
 
 lint.select = [

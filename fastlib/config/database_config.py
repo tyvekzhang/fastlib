@@ -5,8 +5,8 @@ import os
 from typing import Optional
 
 from fastlib.config.config import BaseConfig
-from fastlib.utils import project_config_util
-from fastlib.utils.project_config_util import get_sqlite_db_path
+from fastlib.config import project_config_util
+from fastlib.config.project_config_util import get_sqlite_db_path
 
 
 class DatabaseConfig(BaseConfig):

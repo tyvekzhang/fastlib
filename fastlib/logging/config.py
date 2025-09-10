@@ -6,7 +6,7 @@ from dataclasses import dataclass
 
 
 from fastlib.config.registry import BaseConfig
-from fastlib.utils.project_config_util import ProjectInfo
+from fastlib.config.project_config_util import ProjectInfo
 
 
 @dataclass

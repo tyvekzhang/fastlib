@@ -74,9 +74,5 @@ class PaginationRequest(BaseModel):
         le=1000,
         description="Number of items per page (1-1000)",
     )
-    count: bool = Field(
-        default=True, description="Flag to request total count of items"
-    )
-    sort_str: Optional[str] = Field(
-        default=None, description="Optional sorting string, eg:"
-    )
+    count: bool = Field(default=True, description="Flag to request total count of items")
+    sort_str: Optional[str] = Field(default=None, description="Optional sorting string, eg:")

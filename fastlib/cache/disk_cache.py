@@ -1,11 +1,12 @@
 # SPDX-License-Identifier: MIT
 """DiskCache-based PageCache implementation compatible with Cache interface."""
 
-from contextlib import asynccontextmanager
 import json
-import time
 import threading
-from typing import Any, Dict, List, Optional, Union
+import time
+from contextlib import asynccontextmanager
+from typing import Any, Dict, List, Optional
+
 import diskcache
 
 from fastlib.cache.base_cache import Cache, CacheError

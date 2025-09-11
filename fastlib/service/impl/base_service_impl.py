@@ -36,9 +36,7 @@ class BaseServiceImpl(Generic[M, T], BaseService[T]):
         list[T],
         int,
     ]:
-        return await self.mapper.select_by_page(
-            current=current, page_size=page_size, **kwargs
-        )
+        return await self.mapper.select_by_page(current=current, page_size=page_size, **kwargs)
 
     async def retrieve_ordered_data_list(
         self,

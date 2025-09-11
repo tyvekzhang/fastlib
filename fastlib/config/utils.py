@@ -102,33 +102,33 @@ def get_sqlite_db_path() -> str:
     db_url = get_db_url()
     if db_url.strip() == "":
         raise ValueError("Invalid database URL")
-    db_name = db_url.split(os.sep)[-1].split("/")[-1]
-    raw_path = os.path.join(get_resource_dir(), "alembic", "db", db_name)
-    db_url = "sqlite+aiosqlite:///" + raw_path.replace("\\", "/")
-    return db_url
+    db_name = Path(db_url).name
+    db_path = Path(get_resource_dir()) / "alembic" / "db" / db_name
+    db_path.parent.mkdir(parents=True, exist_ok=True)
+    return f"sqlite+aiosqlite:///{db_path.as_posix()}"
 
 
 def get_db_dialect() -> str:
     """Get the database type from the configured SQLAlchemy URL in alembic.ini."""
     db_url = get_db_url()
 
-    try:
-        scheme = db_url.split("://")[0].split("+")[0].lower()
-    except (IndexError, AttributeError):
-        raise ValueError(f"Malformed database URL: {db_url}")
+    parsed = urlparse(db_url)
+    if not parsed.scheme:
+        raise ValueError(f"Invalid database URL: {db_url}")
 
-    supported_dbs = {
+    dialect = parsed.scheme.split("+")[0].lower()
+    supported_dialects = {
         DBTypeEnum.PGSQL.value,
         DBTypeEnum.MYSQL.value,
         DBTypeEnum.SQLITE.value,
     }
 
-    if scheme not in supported_dbs:
-        raise RuntimeError(
-            f"Unsupported database type: {scheme}. Supported types: {sorted(supported_dbs)}"
+    if dialect not in supported_dialects:
+        raise ValueError(
+            f"Unsupported database dialect: {dialect}. "
+            f"Supported: {', '.join(sorted(supported_dialects))}"
         )
-
-    return scheme
+    return dialect
 
 
 class ProjectInfo:

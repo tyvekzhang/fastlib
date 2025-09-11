@@ -29,8 +29,7 @@ async def log_requests(request: Request, call_next):
     except Exception as exc:
         # Log exception information
         logger.error(
-            f"Request failed - {request.method} {request.url.path} "
-            f"(ID: {request_id}, Error: {str(exc)})",
+            f"Request failed - {request.method} {request.url.path} (ID: {request_id}, Error: {str(exc)})",
             exc_info=True,
         )
         raise

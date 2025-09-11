@@ -9,11 +9,10 @@ import asyncio
 import os
 import time
 import uuid
-from typing import Any, Dict, Optional
+from typing import Any, Optional
 
 import httpx
 from loguru import logger
-
 
 
 class HTTPError(Exception):
@@ -46,9 +45,9 @@ def _handle_response(response: httpx.Response, url: str) -> Any:
 
 async def async_http_get(
     url: str,
-    params: Optional[Dict[str, Any]] = None,
+    params: Optional[dict[str, Any]] = None,
     timeout: float = 10.0,
-    headers: Optional[Dict[str, str]] = None,
+    headers: Optional[dict[str, str]] = None,
 ) -> Any:
     """
     Make an asynchronous HTTP GET request.
@@ -81,9 +80,9 @@ async def async_http_get(
 
 def http_get(
     url: str,
-    params: Optional[Dict[str, Any]] = None,
+    params: Optional[dict[str, Any]] = None,
     timeout: float = 10.0,
-    headers: Optional[Dict[str, str]] = None,
+    headers: Optional[dict[str, str]] = None,
 ) -> Any:
     """
     Make a synchronous HTTP GET request.
@@ -114,9 +113,7 @@ def http_get(
         return _handle_response(response, url)
 
 
-def http_post(
-    url: str, data: Any, headers: Optional[Dict[str, Any]] = None, timeout: float = 10.0
-) -> Any:
+def http_post(url: str, data: Any, headers: Optional[dict[str, Any]] = None, timeout: float = 10.0) -> Any:
     """
     Make a synchronous HTTP POST request.
 
@@ -149,7 +146,7 @@ def http_post(
 async def async_http_post(
     url: str,
     data: Any,
-    headers: Optional[Dict[str, Any]] = None,
+    headers: Optional[dict[str, Any]] = None,
     timeout: float = 10.0,
     max_retries: int = 3,
     retry_delay: float = 0.5,
@@ -188,8 +185,7 @@ async def async_http_post(
                     return response.json()
                 else:
                     logger.error(
-                        f"HTTP POST failed (attempt {attempt}/{max_retries}): "
-                        f"{response.status_code} for {url}"
+                        f"HTTP POST failed (attempt {attempt}/{max_retries}): {response.status_code} for {url}"
                     )
                     if attempt < max_retries:
                         await asyncio.sleep(retry_delay)
@@ -217,9 +213,7 @@ async def async_http_post(
     )
 
 
-def download_file(
-    file_url: str, directory_path: str, timeout: int = 60, verify_ssl: bool = True
-) -> Optional[str]:
+def download_file(file_url: str, directory_path: str, timeout: int = 60, verify_ssl: bool = True) -> Optional[str]:
     """
     Download a file from a URL to a local directory.
 
@@ -250,9 +244,7 @@ def download_file(
                     logger.info(f"Successfully downloaded file to {file_path}")
                     return file_path
                 else:
-                    logger.error(
-                        f"Download failed with status code: {response.status_code}"
-                    )
+                    logger.error(f"Download failed with status code: {response.status_code}")
                     return None
     except httpx.TimeoutException:
         logger.error("Download request timed out")

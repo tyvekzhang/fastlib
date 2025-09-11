@@ -1,6 +1,6 @@
 [project]
 name = "fastlib-py"
-version = "0.1.1"
+version = "0.1.2"
 description = "Fastlib, high performance, easy to use, fast to code, ready for production"
 readme = "README.md"
 keywords = [
@@ -44,6 +44,8 @@ dependencies = [
   "sqlmodel>=0.0.24",
 ]
 
+urls.Homepage = "https://github.com/tyvekzhang/fastlib"
+
 [dependency-groups]
 dev = [
   "coverage>=7.8",
@@ -58,13 +60,10 @@ docs = [
   "sphinx-rtd-theme>=2",
 ]
 
-[project.urls]
-Homepage = "https://github.com/tyvekzhang/fastlib"
-
 [tool.ruff]
 line-length = 120
 
-include = [ "main.py", "fastlib/**/*.py" ]
+include = [ "fastlib/**/*.py", "main.py" ]
 exclude = [ "doc/**/*.py" ]
 
 lint.select = [

@@ -4,7 +4,6 @@ Internationalization message configuration file
 
 from i18n_types import Language
 
-
 # Error message internationalization
 ERROR_MESSAGES = {
     Language.CHINESE: {

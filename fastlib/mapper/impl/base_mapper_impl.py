@@ -50,15 +50,11 @@ class SqlModelMapper(BaseMapper, Generic[ModelType]):
         """
         db_session = db_session or self.db.session
         validated_data_list = [self.model.model_validate(data) for data in data_list]
-        statement = insert(self.model).values(
-            [data.model_dump() for data in validated_data_list]
-        )
+        statement = insert(self.model).values([data.model_dump() for data in validated_data_list])
         exec_response = await db_session.exec(statement)
         return exec_response.rowcount
 
-    async def select_by_id(
-        self, *, id: IDType, db_session: Optional[AsyncSession] = None
-    ) -> Optional[ModelType]:
+    async def select_by_id(self, *, id: IDType, db_session: Optional[AsyncSession] = None) -> Optional[ModelType]:
         """
         Select a single record by its ID.
         """
@@ -67,9 +63,7 @@ class SqlModelMapper(BaseMapper, Generic[ModelType]):
         db_response = await db_session.exec(statement)
         return db_response.one_or_none()
 
-    async def select_by_ids(
-        self, *, ids: list[IDType], db_session: Optional[AsyncSession] = None
-    ) -> list[ModelType]:
+    async def select_by_ids(self, *, ids: list[IDType], db_session: Optional[AsyncSession] = None) -> list[ModelType]:
         """
         Select record list by their IDs.
         """
@@ -220,11 +214,7 @@ class SqlModelMapper(BaseMapper, Generic[ModelType]):
         if sort_list:
             for sort_item in sort_list:
                 column = getattr(self.model, sort_item["field"])
-                query = query.order_by(
-                    column.asc()
-                    if sort_item["order"] == SortEnum.ascending
-                    else column.desc()
-                )
+                query = query.order_by(column.asc() if sort_item["order"] == SortEnum.ascending else column.desc())
         else:
             # Default to primary key descending
             query = query.order_by(self.model.id.asc())
@@ -273,9 +263,7 @@ class SqlModelMapper(BaseMapper, Generic[ModelType]):
         if hasattr(self.model, constant.PARENT_ID) and (
             constant.PARENT_ID not in kwargs or kwargs[constant.PARENT_ID] is None
         ):
-            query = query.filter(
-                getattr(self.model, constant.PARENT_ID) == constant.ROOT_PARENT_ID
-            )
+            query = query.filter(getattr(self.model, constant.PARENT_ID) == constant.ROOT_PARENT_ID)
         if FilterOperators.EQ in kwargs:
             for column, value in kwargs[FilterOperators.EQ].items():
                 query = query.filter(getattr(self.model, column) == value)
@@ -315,11 +303,7 @@ class SqlModelMapper(BaseMapper, Generic[ModelType]):
         if sort_list:
             for sort_item in sort_list:
                 column = getattr(self.model, sort_item["field"])
-                query = query.order_by(
-                    column.asc()
-                    if sort_item["order"] == SortEnum.ascending
-                    else column.desc()
-                )
+                query = query.order_by(column.asc() if sort_item["order"] == SortEnum.ascending else column.desc())
         else:
             # Default to primary key descending
             query = query.order_by(self.model.id.desc())
@@ -332,9 +316,7 @@ class SqlModelMapper(BaseMapper, Generic[ModelType]):
 
         return data_list, total_count
 
-    async def update_by_id(
-        self, *, data: ModelType, db_session: Optional[AsyncSession] = None
-    ) -> int:
+    async def update_by_id(self, *, data: ModelType, db_session: Optional[AsyncSession] = None) -> int:
         """
         Update a single data by its ID.
         """
@@ -373,9 +355,7 @@ class SqlModelMapper(BaseMapper, Generic[ModelType]):
                 continue
 
             # Build WHERE clause for composite keys
-            where_clause = and_(
-                *[getattr(self.model, pk) == item[pk] for pk in pk_fields]
-            )
+            where_clause = and_(*[getattr(self.model, pk) == item[pk] for pk in pk_fields])
 
             # Extract update gen_fields
             update_data = {k: v for k, v in item.items() if k not in pk_fields}
@@ -406,9 +386,7 @@ class SqlModelMapper(BaseMapper, Generic[ModelType]):
         exec_response = await db_session.exec(statement)
         return exec_response.rowcount
 
-    async def delete_by_id(
-        self, *, id: IDType, db_session: Optional[AsyncSession] = None
-    ) -> int:
+    async def delete_by_id(self, *, id: IDType, db_session: Optional[AsyncSession] = None) -> int:
         """
         Delete a single data by its ID.
         """
@@ -417,9 +395,7 @@ class SqlModelMapper(BaseMapper, Generic[ModelType]):
         exec_response = await db_session.exec(statement)
         return exec_response.rowcount
 
-    async def batch_delete_by_ids(
-        self, *, ids: list[IDType], db_session: Optional[AsyncSession] = None
-    ) -> int:
+    async def batch_delete_by_ids(self, *, ids: list[IDType], db_session: Optional[AsyncSession] = None) -> int:
         """
         Delete record list by their IDs.
         """
@@ -464,9 +440,7 @@ class SqlModelMapper(BaseMapper, Generic[ModelType]):
         children = result.scalars().all()
 
         # Convert ORM children to SchemaType instances
-        children_schema = [
-            schema_class(**child.model_dump()) for child in children
-        ]  # 假设使用 Pydantic 的 from_orm
+        children_schema = [schema_class(**child.model_dump()) for child in children]  # 假设使用 Pydantic 的 from_orm
 
         # Group children by parent_id
         children_by_parent = {}

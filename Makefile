@@ -33,7 +33,7 @@ build: clean
 	@echo "Building distribution packages..."
 	uv build
 
-publish: build
+publish:
 	@echo "Publishing to PyPI..."
 	uv publish
 

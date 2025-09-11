@@ -36,9 +36,7 @@ class BaseService(Generic[T], ABC):
         ...
 
     @abstractmethod
-    async def retrieve_data_list(
-        self, *, current: int, page_size: int, **kwargs
-    ) -> tuple[list[T], int]:
+    async def retrieve_data_list(self, *, current: int, page_size: int, **kwargs) -> tuple[list[T], int]:
         """Return paginated records with optional filters and total count."""
         ...
 

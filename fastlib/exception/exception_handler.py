@@ -32,18 +32,11 @@ async def extract_request_data(request: Request) -> Dict[str, Any]:
     try:
         if "application/json" in content_type:
             data["json"] = await request.json()
-        elif (
-            "application/x-www-form-urlencoded" in content_type
-            or "multipart/form-data" in content_type
-        ):
+        elif "application/x-www-form-urlencoded" in content_type or "multipart/form-data" in content_type:
             form = await request.form()
             form_data = {}
             for key, value in form.items():
-                if (
-                    not hasattr(value, "filename")
-                    and not hasattr(value, "file")
-                    and not hasattr(value, "files")
-                ):
+                if not hasattr(value, "filename") and not hasattr(value, "file") and not hasattr(value, "files"):
                     form_data[key] = value
                 else:
                     form_data[key] = f"<file: {value.filename}>"
@@ -71,9 +64,7 @@ def collect_request_info(request: Request) -> Dict[str, Any]:
         "method": request.method,
         "query_params": dict(request.query_params),
         "headers": dict(request.headers),
-        "client": f"{request.client.host}:{request.client.port}"
-        if request.client
-        else None,
+        "client": f"{request.client.host}:{request.client.port}" if request.client else None,
     }
 
 
@@ -196,9 +187,7 @@ async def custom_exception_handler(request: Request, exc: HTTPException):
     )
 
 
-async def request_validation_exception_handler(
-    request: Request, exc: RequestValidationError
-) -> JSONResponse:
+async def request_validation_exception_handler(request: Request, exc: RequestValidationError) -> JSONResponse:
     """
     Handler for RequestValidationError.
     """

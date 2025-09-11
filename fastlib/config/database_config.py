@@ -4,9 +4,8 @@
 import os
 from typing import Optional
 
+import fastlib.config.utils as utils
 from fastlib.config.config import BaseConfig
-from fastlib.config import project_config_util
-from fastlib.config.project_config_util import get_sqlite_db_path
 
 
 class DatabaseConfig(BaseConfig):
@@ -43,18 +42,18 @@ class DatabaseConfig(BaseConfig):
             db_num: Redis database number.
         """
         if dialect is None or len(dialect.strip()) == 0:
-            dialect = project_config_util.get_db_dialect()
+            dialect = utils.get_db_dialect()
         self.dialect = dialect
-        
+
         # Prioritize environment variable for database URL
-        env_db_url = os.getenv('DATABASE_URL')
+        env_db_url = os.getenv("DATABASE_URL")
         if env_db_url:
             self.url = env_db_url
         elif url is None or len(url.strip()) == 0:
             if dialect == "sqlite" or dialect is None:
-                url = get_sqlite_db_path()
+                url = utils.get_sqlite_db_path()
             else:
-                url = project_config_util.get_db_url()
+                url = utils.get_db_url()
             self.url = url
         else:
             self.url = url
@@ -66,11 +65,11 @@ class DatabaseConfig(BaseConfig):
         self.enable_redis = enable_redis
         self.cache_host = cache_host
         self.cache_port = cache_port
-        
+
         # Prioritize environment variable for Redis password
-        env_redis_pass = os.getenv('REDIS_PASSWORD')
+        env_redis_pass = os.getenv("REDIS_PASSWORD")
         self.cache_pass = env_redis_pass if env_redis_pass is not None else cache_pass
-        
+
         self.db_num = db_num
 
     def __str__(self) -> str:

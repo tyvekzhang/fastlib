@@ -1,20 +1,19 @@
 # SPDX-License-Identifier: MIT
 """Log configuration and logging utility for the application."""
 
-from pathlib import Path
 from dataclasses import dataclass
+from pathlib import Path
 
-
-from fastlib.config.registry import BaseConfig
 from fastlib.config.project_config_util import ProjectInfo
+from fastlib.config.registry import BaseConfig
 
 
 @dataclass
 class LogConfig(BaseConfig):
     """Configuration for logging settings."""
-    
+
     _project_config = ProjectInfo.from_pyproject()
-    
+
     log_dir: str
     log_level: str = "INFO"
     log_rotation: str = "1 day"
@@ -25,16 +24,16 @@ class LogConfig(BaseConfig):
     error_log_rotation: str = "1 day"
     error_log_retention: str = "30 days"
     app_name: str = _project_config.name
-    
+
     def __post_init__(self):
         """Post-initialization processing."""
         self.log_dir = Path(self.log_dir)
-        
+
     @property
     def log_file_pattern(self) -> str:
         """Returns the main log file pattern with timestamp."""
         return f"{{time:{self.time_format}}}_{self.app_name}.log"
-    
+
     @property
     def error_log_file_pattern(self) -> str:
         """Returns the error log file pattern with timestamp."""

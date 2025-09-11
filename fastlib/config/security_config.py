@@ -36,11 +36,11 @@ class SecurityConfig(BaseConfig):
         self.enable = enable
         self.enable_swagger = enable_swagger
         self.algorithm = algorithm
-        
+
         # Prioritize environment variable for secret key
-        env_secret_key = os.getenv('SECRET_KEY')
+        env_secret_key = os.getenv("SECRET_KEY")
         self.secret_key = env_secret_key if env_secret_key is not None else secret_key
-        
+
         self.access_token_expire_minutes = access_token_expire_minutes
         self.refresh_token_expire_minutes = refresh_token_expire_minutes
         self.white_list_routes = white_list_routes

@@ -18,9 +18,7 @@ IDType = TypeVar("IDType", int, str)
 
 class BaseMapper(ABC, Generic[ModelType]):
     @abstractmethod
-    async def insert(
-        self, *, data: ModelType, db_session: Optional[AsyncSession] = None
-    ) -> ModelType:
+    async def insert(self, *, data: ModelType, db_session: Optional[AsyncSession] = None) -> ModelType:
         """Insert a single data into the database.
 
         Args:
@@ -51,9 +49,7 @@ class BaseMapper(ABC, Generic[ModelType]):
         raise NotImplementedError
 
     @abstractmethod
-    async def select_by_id(
-        self, *, id: IDType, db_session: Optional[AsyncSession] = None
-    ) -> Optional[ModelType]:
+    async def select_by_id(self, *, id: IDType, db_session: Optional[AsyncSession] = None) -> Optional[ModelType]:
         """Select a single record by its ID.
 
         Args:
@@ -66,9 +62,7 @@ class BaseMapper(ABC, Generic[ModelType]):
         raise NotImplementedError
 
     @abstractmethod
-    async def select_by_ids(
-        self, *, ids: list[IDType], db_session: Optional[AsyncSession] = None
-    ) -> list[ModelType]:
+    async def select_by_ids(self, *, ids: list[IDType], db_session: Optional[AsyncSession] = None) -> list[ModelType]:
         """Select record list by their IDs.
 
         Args:
@@ -151,9 +145,7 @@ class BaseMapper(ABC, Generic[ModelType]):
         raise NotImplementedError
 
     @abstractmethod
-    async def update_by_id(
-        self, *, data: ModelType, db_session: Optional[AsyncSession] = None
-    ) -> int:
+    async def update_by_id(self, *, data: ModelType, db_session: Optional[AsyncSession] = None) -> int:
         """Update a record by its ID.
 
         Args:
@@ -205,9 +197,7 @@ class BaseMapper(ABC, Generic[ModelType]):
         raise NotImplementedError
 
     @abstractmethod
-    async def delete_by_id(
-        self, *, id: IDType, db_session: Optional[AsyncSession] = None
-    ) -> int:
+    async def delete_by_id(self, *, id: IDType, db_session: Optional[AsyncSession] = None) -> int:
         """Delete a data by its ID.
 
         Args:
@@ -220,9 +210,7 @@ class BaseMapper(ABC, Generic[ModelType]):
         raise NotImplementedError
 
     @abstractmethod
-    async def batch_delete_by_ids(
-        self, *, ids: list[IDType], db_session: Optional[AsyncSession] = None
-    ) -> int:
+    async def batch_delete_by_ids(self, *, ids: list[IDType], db_session: Optional[AsyncSession] = None) -> int:
         """Delete multiple data_list by their IDs.
 
         Args:

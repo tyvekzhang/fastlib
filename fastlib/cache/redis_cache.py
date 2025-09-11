@@ -5,7 +5,7 @@ import asyncio
 import time
 import uuid
 from contextlib import asynccontextmanager
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional
 
 from loguru import logger
 
@@ -15,9 +15,7 @@ try:
     import redis.asyncio as redis
     from redis.exceptions import RedisError
 except ModuleNotFoundError:
-    logger.error(
-        "Cannot find redis module, please install it via `uv add redis[hiredis] and then uv remove diskcache`"
-    )
+    logger.error("Cannot find redis module, please install it via `uv add redis[hiredis] and then uv remove diskcache`")
     redis = None
     RedisError = Exception
 except Exception:
@@ -31,9 +29,7 @@ from fastlib.config.manager import load_config
 class RedisCache(Cache):
     def __init__(self, redis_client):
         if redis is None:
-            raise RuntimeError(
-                "Redis module is not available. Please install it via 'uv add redis[hiredis]'"
-            )
+            raise RuntimeError("Redis module is not available. Please install it via 'uv add redis[hiredis]'")
         self.redis_client = redis_client
         self._lock_tokens = {}  # Store lock tokens for distributed locks
 
@@ -56,7 +52,7 @@ class RedisCache(Cache):
         try:
             if nx and xx:
                 raise ValueError("Cannot use both nx and xx options together")
-            
+
             if nx:
                 return await self.redis_client.set(key, value, ex=ex, nx=True)
             elif xx:
@@ -216,24 +212,22 @@ class RedisCache(Cache):
         try:
             # Generate a unique identifier for this lock
             identifier = str(uuid.uuid4())
-            
+
             # Calculate the end time for blocking
             end_time = time.time() + blocking_timeout
-            
+
             while time.time() < end_time:
                 # Try to acquire the lock
-                acquired = await self.redis_client.set(
-                    lock_name, identifier, ex=timeout, nx=True
-                )
-                
+                acquired = await self.redis_client.set(lock_name, identifier, ex=timeout, nx=True)
+
                 if acquired:
                     # Store the identifier for later release
                     self._lock_tokens[lock_name] = identifier
                     return True
-                
+
                 # Wait a bit before trying again
                 await asyncio.sleep(0.1)
-            
+
             return False
         except RedisError as e:
             raise CacheError(f"Failed to acquire lock {lock_name}", e)
@@ -244,7 +238,7 @@ class RedisCache(Cache):
             # Check if we have the lock
             if lock_name not in self._lock_tokens:
                 return False
-            
+
             # Use a Lua script to ensure atomic check and delete
             lua_script = """
             if redis.call("get", KEYS[1]) == ARGV[1] then
@@ -253,15 +247,13 @@ class RedisCache(Cache):
                 return 0
             end
             """
-            
-            result = await self.redis_client.eval(
-                lua_script, 1, lock_name, self._lock_tokens[lock_name]
-            )
-            
+
+            result = await self.redis_client.eval(lua_script, 1, lock_name, self._lock_tokens[lock_name])
+
             # Remove the token from our storage
             if result:
                 del self._lock_tokens[lock_name]
-            
+
             return bool(result)
         except RedisError as e:
             raise CacheError(f"Failed to release lock {lock_name}", e)
@@ -338,9 +330,7 @@ class RedisManager:
         Get redis instance
         """
         if redis is None:
-            raise RuntimeError(
-                "Redis module is not available. Please install it via 'uv add redis[hiredis]'"
-            )
+            raise RuntimeError("Redis module is not available. Please install it via 'uv add redis[hiredis]'")
 
         if cls._instance is None:
             async with cls._lock:

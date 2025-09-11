@@ -2,10 +2,11 @@
 Internationalization utility class supporting Chinese and English language switching
 """
 
-from typing import Dict, Any, Optional
-from .i18n_types import Language
-from .i18n_messages import get_message
+from typing import Any, Dict, Optional
+
 from .i18n_context import I18nContext
+from .i18n_messages import get_message
+from .i18n_types import Language
 
 
 class I18nUtil:
@@ -26,13 +27,13 @@ class I18nUtil:
     def parse_language(cls, language_str: Optional[str]) -> Language:
         """
         Parse language string
-        
+
         Args:
             language_str: Language string (e.g., "zh", "en", "zh-CN", "en-US")
-            
+
         Returns:
             Language enum value
-            
+
         Example:
             >>> I18nUtil.parse_language("zh-CN")
             <Language.CHINESE: 'zh'>
@@ -53,14 +54,14 @@ class I18nUtil:
     def get_error_message(cls, key: str, language: Optional[Language] = None) -> str:
         """
         Get error message
-        
+
         Args:
             key: Error message key
             language: Language, if None uses context language
-            
+
         Returns:
             Error message string
-            
+
         Example:
             >>> I18nUtil.get_error_message("invalid_input", Language.CHINESE)
             "无效输入"
@@ -74,11 +75,11 @@ class I18nUtil:
     def get_success_message(cls, key: str, language: Optional[Language] = None) -> str:
         """
         Get success message
-        
+
         Args:
             key: Success message key
             language: Language, if None uses context language
-            
+
         Returns:
             Success message string
         """
@@ -88,11 +89,11 @@ class I18nUtil:
         return get_message("success", key, language)
         """
         Get business message
-        
+
         Args:
             key: Business message key
             language: Language, if None uses context language
-            
+
         Returns:
             Business message string
         """
@@ -111,19 +112,19 @@ class I18nUtil:
     ) -> Dict[str, Any]:
         """
         Create error response
-        
+
         Args:
             error_key: Error message key
             language: Language
             details: Error details
             error_code: Error code
-            
+
         Returns:
             Error response dictionary
-            
+
         Example:
             >>> response = I18nUtil.create_error_response(
-            ...     "invalid_input", 
+            ...     "invalid_input",
             ...     Language.ENGLISH,
             ...     "Email format is incorrect",
             ...     422
@@ -165,15 +166,15 @@ class I18nUtil:
     ) -> Dict[str, Any]:
         """
         Create success response
-        
+
         Args:
             data: Response data
             language: Language
             message_key: Success message key
-            
+
         Returns:
             Success response dictionary
-            
+
         Example:
             >>> response = I18nUtil.create_success_response(
             ...     {"user": {"id": 1, "name": "John"}},
@@ -197,6 +198,7 @@ class I18nUtil:
             "message": cls.get_success_message(message_key, language),
             "language": language.value,
         }
+
 
 # Convenience functions
 def get_language(language_str: Optional[str]) -> Language:

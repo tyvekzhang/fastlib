@@ -10,7 +10,7 @@ import importlib
 import os
 import traceback
 from pathlib import Path
-from typing import  Set
+from typing import Set
 
 from fastapi import APIRouter
 from loguru import logger
@@ -100,11 +100,7 @@ def register_router(
                 router_instance = getattr(module, router_var_name)
                 router.include_router(
                     router_instance,
-                    tags=[
-                        str_util.snake_to_title(
-                            module_name.replace(f"_{controller_flag}", "")
-                        )
-                    ],
+                    tags=[str_util.snake_to_title(module_name.replace(f"_{controller_flag}", ""))],
                     prefix=f"{api_version}",
                 )
         except ImportError as e:
@@ -116,14 +112,10 @@ def register_router(
         controller_dir = Path(controller_item).resolve()
         if controller_dir.is_dir():
             process_directory(controller_dir)
-        elif controller_dir.is_file() and controller_dir.name.endswith(
-            f"_{controller_flag}.py"
-        ):
+        elif controller_dir.is_file() and controller_dir.name.endswith(f"_{controller_flag}.py"):
             # Also allow directly specifying controller files
             process_controller_file(controller_dir)
         else:
-            logger.warning(
-                f"Path {controller_dir} is neither a directory nor a valid controller file"
-            )
+            logger.warning(f"Path {controller_dir} is neither a directory nor a valid controller file")
 
     return router

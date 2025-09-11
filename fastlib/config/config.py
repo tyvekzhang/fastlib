@@ -16,5 +16,3 @@ class BaseConfig(ABC):
     def __str__(self) -> str:
         """Return string representation of the configuration."""
         pass
-
-

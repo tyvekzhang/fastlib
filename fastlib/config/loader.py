@@ -19,9 +19,7 @@ class ConfigLoader:
             base_config_file (str): Store the base config file path
         """
         if base_config_file is None:
-            base_config_file = os.path.join(
-                constant.RESOURCE_DIR, constant.CONFIG_FILE_NAME
-            )
+            base_config_file = os.path.join(constant.RESOURCE_DIR, constant.CONFIG_FILE_NAME)
             self.default_flag = True
         else:
             self.default_flag = False
@@ -81,9 +79,7 @@ class ConfigLoader:
                 environment = self.env
             env_config_file = constant.CONFIG_FILE_NAME.replace(".", f"-{environment}.")
             # Replace the base config file name with the environment-specific one
-            env_config_path = self.base_config_file.replace(
-                constant.CONFIG_FILE_NAME, env_config_file
-            )
+            env_config_path = self.base_config_file.replace(constant.CONFIG_FILE_NAME, env_config_file)
             if os.path.exists(env_config_path):
                 env_config = self.load_yaml_file(env_config_path)
                 self.config = self._merge_dicts(self.config, env_config)

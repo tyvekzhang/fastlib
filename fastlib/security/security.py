@@ -9,7 +9,6 @@ from fastapi.security import OAuth2PasswordBearer
 from jwt.exceptions import InvalidTokenError
 from passlib.context import CryptContext
 
-from fastlib.config.manager import ConfigManager
 from fastlib.schema import CurrentUser
 
 # Configuration
@@ -51,9 +50,7 @@ def decode_jwt_token(token: str) -> dict[str, Any]:
 
 
 def get_oauth2_scheme() -> OAuth2PasswordBearer:
-    oauth2_scheme = OAuth2PasswordBearer(
-        tokenUrl=f"{server_config.api_prefix}/v1/auth/auth:signInWithEmailAndPassword"
-    )
+    oauth2_scheme = OAuth2PasswordBearer(tokenUrl=f"{server_config.api_prefix}/v1/auth/auth:signInWithEmailAndPassword")
     return oauth2_scheme
 
 
@@ -105,9 +102,7 @@ def create_token(
     Returns:
         Encoded JWT string
     """
-    expire = datetime.utcnow() + (
-        expires_delta or timedelta(minutes=security_config.refresh_token_expire_minutes)
-    )
+    expire = datetime.utcnow() + (expires_delta or timedelta(minutes=security_config.refresh_token_expire_minutes))
     to_encode = {"exp": expire, "sub": str(subject), "type": token_type}
     return jwt.encode(
         to_encode,

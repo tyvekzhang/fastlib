@@ -2,7 +2,7 @@
 """Server configuration for the application."""
 
 from fastlib.config.config import BaseConfig
-from fastlib.config.project_config_util import ProjectInfo
+from fastlib.config.utils import ProjectInfo
 
 
 class ServerConfig(BaseConfig):

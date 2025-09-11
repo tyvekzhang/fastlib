@@ -16,14 +16,10 @@ class PathFinder:
         Args:
             base_path: Starting path for searches. Defaults to current file's directory.
         """
-        self.base_path = (
-            Path(base_path) if base_path else Path(__file__).resolve().parent
-        )
+        self.base_path = Path(base_path) if base_path else Path(__file__).resolve().parent
 
     @lru_cache(maxsize=32)
-    def find_upward(
-        self, target: str, start_path: Optional[Path] = None, max_depth: int = 20
-    ) -> Path:
+    def find_upward(self, target: str, start_path: Optional[Path] = None, max_depth: int = 20) -> Path:
         """Find a file or directory by searching upward through parent directories.
 
         Args:
@@ -48,9 +44,7 @@ class PathFinder:
                 break
             current = current.parent
 
-        raise FileNotFoundError(
-            f"'{target}' not found within {max_depth} levels from {start_path or self.base_path}"
-        )
+        raise FileNotFoundError(f"'{target}' not found within {max_depth} levels from {start_path or self.base_path}")
 
     def find_project_root(self, markers: Union[str, list[str]] = None) -> Path:
         """Locate project root directory using marker files.
@@ -77,9 +71,7 @@ class PathFinder:
             except FileNotFoundError:
                 continue
 
-        raise FileNotFoundError(
-            f"No project root marker found. Tried: {', '.join(markers)}"
-        )
+        raise FileNotFoundError(f"No project root marker found. Tried: {', '.join(markers)}")
 
     @property
     @lru_cache(maxsize=1)
@@ -121,9 +113,7 @@ def get_resource_dir() -> str:
         # If resource dir doesn't exist at project root, fall back to relative path
         if not resource_dir.exists():
             # Fallback to the original logic (3 levels up)
-            return str(
-                Path(__file__).resolve().parent.parent.parent.parent / "resource"
-            )
+            return str(Path(__file__).resolve().parent.parent.parent.parent / "resource")
 
         return str(resource_dir)
     except FileNotFoundError:

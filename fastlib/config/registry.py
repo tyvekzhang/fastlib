@@ -1,10 +1,8 @@
 # SPDX-License-Identifier: MIT
 """Configuration registry for dynamic configuration class management."""
 
-from typing import Any, Dict, Optional, Type
-
 # Import BaseConfig from config module to avoid circular imports
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any, Dict, Optional, Type
 
 if TYPE_CHECKING:
     from fastlib.config.config import BaseConfig
@@ -38,8 +36,9 @@ class ConfigRegistry:
             raise ValueError(f"Configuration '{name}' is already registered")
 
         # Check if BaseConfig is available and if config_class inherits from it
-        if hasattr(config_class, '__bases__'):
+        if hasattr(config_class, "__bases__"):
             from fastlib.config.config import BaseConfig
+
             if not issubclass(config_class, BaseConfig):
                 raise ValueError("Configuration class must inherit from BaseConfig")
 
@@ -70,9 +69,7 @@ class ConfigRegistry:
         return cls._registry.get(name)
 
     @classmethod
-    def create_instance(
-        cls, name: str, config_dict: Dict[str, Any]
-    ) -> Optional[Any]:
+    def create_instance(cls, name: str, config_dict: Dict[str, Any]) -> Optional[Any]:
         """
         Create an instance of a registered configuration class.
 

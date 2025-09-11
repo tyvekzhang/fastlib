@@ -1,20 +1,20 @@
 """Snowflake utils to generate unique id"""
 
-import time
 import threading
+import time
 from typing import Optional
 
 
 class SnowflakeIDGenerator:
     """
     Snowflake ID Generator
-    
+
     Snowflake ID structure (64 bits):
     - Sign bit: 1 bit, always 0
     - Timestamp: 41 bits, millisecond precision
     - Worker ID: 10 bits (5 bits datacenter ID + 5 bits machine ID)
     - Sequence number: 12 bits, auto-increment within the same millisecond
-    
+
     Features:
     - Monotonically increasing
     - Globally unique
@@ -25,12 +25,12 @@ class SnowflakeIDGenerator:
     def __init__(self, datacenter_id: int = 1, worker_id: int = 1, sequence: int = 0):
         """
         Initialize the Snowflake ID generator
-        
+
         Args:
             datacenter_id: Datacenter ID (0-31)
             worker_id: Worker ID (0-31)
             sequence: Initial sequence number
-            
+
         Raises:
             ValueError: If datacenter_id or worker_id is out of valid range
         """
@@ -48,15 +48,11 @@ class SnowflakeIDGenerator:
         # Shift offsets
         self.WORKER_ID_SHIFT = self.SEQUENCE_BITS
         self.DATACENTER_ID_SHIFT = self.SEQUENCE_BITS + self.WORKER_ID_BITS
-        self.TIMESTAMP_LEFT_SHIFT = (
-            self.SEQUENCE_BITS + self.WORKER_ID_BITS + self.DATACENTER_ID_BITS
-        )
+        self.TIMESTAMP_LEFT_SHIFT = self.SEQUENCE_BITS + self.WORKER_ID_BITS + self.DATACENTER_ID_BITS
 
         # Validate parameters
         if datacenter_id > self.MAX_DATACENTER_ID or datacenter_id < 0:
-            raise ValueError(
-                f"Datacenter ID must be between 0 and {self.MAX_DATACENTER_ID}"
-            )
+            raise ValueError(f"Datacenter ID must be between 0 and {self.MAX_DATACENTER_ID}")
         if worker_id > self.MAX_WORKER_ID or worker_id < 0:
             raise ValueError(f"Worker ID must be between 0 and {self.MAX_WORKER_ID}")
 
@@ -76,7 +72,7 @@ class SnowflakeIDGenerator:
     def _get_timestamp(self) -> int:
         """
         Get current timestamp in milliseconds
-        
+
         Returns:
             Current timestamp in milliseconds
         """
@@ -85,10 +81,10 @@ class SnowflakeIDGenerator:
     def _wait_for_next_millis(self, last_timestamp: int) -> int:
         """
         Wait until the next millisecond
-        
+
         Args:
             last_timestamp: Last timestamp used
-            
+
         Returns:
             New timestamp in the next millisecond
         """
@@ -100,10 +96,10 @@ class SnowflakeIDGenerator:
     def generate_id(self) -> int:
         """
         Generate a Snowflake ID
-        
+
         Returns:
             64-bit Snowflake ID
-            
+
         Raises:
             RuntimeError: If clock moves backwards (clock drift detected)
         """
@@ -141,7 +137,7 @@ class SnowflakeIDGenerator:
     def generate_id_str(self) -> str:
         """
         Generate a Snowflake ID as string
-        
+
         Returns:
             Snowflake ID as string
         """
@@ -150,10 +146,10 @@ class SnowflakeIDGenerator:
     def parse_id(self, snowflake_id: int) -> dict:
         """
         Parse a Snowflake ID into its components
-        
+
         Args:
             snowflake_id: Snowflake ID to parse
-            
+
         Returns:
             Dictionary containing parsed components:
             - timestamp: Original timestamp
@@ -163,9 +159,7 @@ class SnowflakeIDGenerator:
             - datetime: Human-readable datetime string
         """
         timestamp = (snowflake_id >> self.TIMESTAMP_LEFT_SHIFT) + self.EPOCH
-        datacenter_id = (
-            snowflake_id >> self.DATACENTER_ID_SHIFT
-        ) & self.MAX_DATACENTER_ID
+        datacenter_id = (snowflake_id >> self.DATACENTER_ID_SHIFT) & self.MAX_DATACENTER_ID
         worker_id = (snowflake_id >> self.WORKER_ID_SHIFT) & self.MAX_WORKER_ID
         sequence = snowflake_id & self.MAX_SEQUENCE
 
@@ -174,9 +168,7 @@ class SnowflakeIDGenerator:
             "datacenter_id": datacenter_id,
             "worker_id": worker_id,
             "sequence": sequence,
-            "datetime": time.strftime(
-                "%Y-%m-%d %H:%M:%S", time.localtime(timestamp / 1000)
-            ),
+            "datetime": time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(timestamp / 1000)),
         }
 
 
@@ -185,16 +177,14 @@ _snowflake_generator: Optional[SnowflakeIDGenerator] = None
 _generator_lock = threading.Lock()
 
 
-def get_snowflake_generator(
-    datacenter_id: int = 1, worker_id: int = 1
-) -> SnowflakeIDGenerator:
+def get_snowflake_generator(datacenter_id: int = 1, worker_id: int = 1) -> SnowflakeIDGenerator:
     """
     Get the global Snowflake ID generator instance (singleton pattern)
-    
+
     Args:
         datacenter_id: Datacenter ID
         worker_id: Worker ID
-        
+
     Returns:
         Snowflake ID generator instance
     """
@@ -211,7 +201,7 @@ def get_snowflake_generator(
 def generate_snowflake_id() -> int:
     """
     Generate a Snowflake ID using default configuration
-    
+
     Returns:
         64-bit Snowflake ID
     """
@@ -221,7 +211,7 @@ def generate_snowflake_id() -> int:
 def generate_snowflake_id_str() -> str:
     """
     Generate a Snowflake ID as string using default configuration
-    
+
     Returns:
         Snowflake ID as string
     """
@@ -231,10 +221,10 @@ def generate_snowflake_id_str() -> str:
 def parse_snowflake_id(snowflake_id: int) -> dict:
     """
     Parse a Snowflake ID into its components
-    
+
     Args:
         snowflake_id: Snowflake ID to parse
-        
+
     Returns:
         Dictionary containing parsed components
     """
@@ -245,7 +235,7 @@ def parse_snowflake_id(snowflake_id: int) -> dict:
 def snowflake_id() -> int:
     """
     Convenience function for quick Snowflake ID generation
-    
+
     Returns:
         64-bit Snowflake ID
     """
@@ -255,7 +245,7 @@ def snowflake_id() -> int:
 def snowflake_id_str() -> str:
     """
     Convenience function for quick Snowflake ID generation as string
-    
+
     Returns:
         Snowflake ID as string
     """

@@ -4,9 +4,7 @@
 import os
 
 current_dir: str = os.path.dirname(os.path.abspath(__file__))
-RESOURCE_DIR: str = os.path.abspath(
-    os.path.join(current_dir, os.pardir, os.pardir, os.pardir, "resource")
-)
+RESOURCE_DIR: str = os.path.abspath(os.path.join(current_dir, os.pardir, os.pardir, os.pardir, "resource"))
 
 ADMIN_ID = 9
 ROOT_PARENT_ID = 0

@@ -5,7 +5,7 @@ import os
 from typing import Optional
 
 import fastlib.config.utils as utils
-from fastlib.config.config import BaseConfig
+from fastlib.config.base import BaseConfig
 
 
 class DatabaseConfig(BaseConfig):

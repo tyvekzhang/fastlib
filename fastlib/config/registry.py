@@ -5,7 +5,7 @@
 from typing import TYPE_CHECKING, Any, Dict, Optional, Type
 
 if TYPE_CHECKING:
-    from fastlib.config.config import BaseConfig
+    from fastlib.config.base import BaseConfig
 else:
     try:
         from fastlib.config.config import BaseConfig
@@ -37,7 +37,7 @@ class ConfigRegistry:
 
         # Check if BaseConfig is available and if config_class inherits from it
         if hasattr(config_class, "__bases__"):
-            from fastlib.config.config import BaseConfig
+            from fastlib.config.base import BaseConfig
 
             if not issubclass(config_class, BaseConfig):
                 raise ValueError("Configuration class must inherit from BaseConfig")

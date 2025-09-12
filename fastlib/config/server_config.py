@@ -1,29 +1,26 @@
 # SPDX-License-Identifier: MIT
 """Server configuration for the application."""
 
-from fastlib.config.config import BaseConfig
+from fastlib.config.base import BaseConfig
 from fastlib.config.utils import ProjectInfo
 
 
 class ServerConfig(BaseConfig):
-    project_config = ProjectInfo.from_pyproject()
+    _project_config = ProjectInfo.from_pyproject()
 
     def __init__(
         self,
-        host: str,
-        port: int,
-        api_prefix: str,
-        workers: int,
-        debug: bool,
-        log_file_path: str,
-        win_tz: str,
-        linux_tz: str,
-        enable_rate_limit: bool,
-        global_default_limits: str,
-        name: str = project_config.name[0].upper() + project_config.name[1:],
-        version: str = project_config.version,
-        app_desc: str = project_config.description,
-    ) -> None:
+        name: str = _project_config.name[0].upper() + _project_config.name[1:],
+        version: str = _project_config.version,
+        app_desc: str = _project_config.description,
+        host: str = "127.0.0.1",
+        port: int = 18888,
+        api_prefix: str = "/api",
+        workers: int = 1,
+        debug: bool = False,
+        enable_rate_limit: bool = False,
+        global_default_limits: str = "",
+    ):
         """
         Initializes server configuration.
 
@@ -36,9 +33,6 @@ class ServerConfig(BaseConfig):
             api_prefix: The server api_prefix.
             debug: Whether to enable debug mode.
             workers: The server worker numbers.
-            log_file_path: Path to the log file.
-            win_tz: Windows timezone setting.
-            linux_tz: Linux timezone setting.
             enable_rate_limit: Whether to enable rate limiting.
             global_default_limits: Global rate limit setting.
         """
@@ -50,9 +44,6 @@ class ServerConfig(BaseConfig):
         self.api_prefix = api_prefix
         self.debug = debug
         self.workers = workers
-        self.log_file_path = log_file_path
-        self.win_tz = win_tz
-        self.linux_tz = linux_tz
         self.enable_rate_limit = enable_rate_limit
         self.global_default_limits = global_default_limits
 

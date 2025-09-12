@@ -3,7 +3,7 @@
 
 import os
 
-from fastlib.config.config import BaseConfig
+from fastlib.config.base import BaseConfig
 
 
 class SecurityConfig(BaseConfig):

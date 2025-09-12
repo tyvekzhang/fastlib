@@ -3,8 +3,9 @@
 
 import os
 
-current_dir: str = os.path.dirname(os.path.abspath(__file__))
-RESOURCE_DIR: str = os.path.abspath(os.path.join(current_dir, os.pardir, os.pardir, os.pardir, "resource"))
+from fastlib.utils import file_util
+
+RESOURCE_DIR: str = os.path.abspath(os.path.join(file_util.find_project_root(), "src", "main", "resource"))
 
 ADMIN_ID = 9
 ROOT_PARENT_ID = 0

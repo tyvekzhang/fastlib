@@ -3,8 +3,6 @@
 """Alembic configuration parser"""
 
 import configparser
-from functools import lru_cache
-import os.path
 from pathlib import Path
 from typing import Dict, NamedTuple, Optional
 from urllib.parse import urlparse
@@ -13,7 +11,6 @@ from loguru import logger
 
 from fastlib.enums.enum import DBTypeEnum
 from fastlib.utils import file_util
-from fastlib.utils.file_util import get_resource_dir
 
 try:
     import tomllib
@@ -103,7 +100,7 @@ def get_sqlite_db_path() -> str:
     if db_url.strip() == "":
         raise ValueError("Invalid database URL")
     db_name = Path(db_url).name
-    db_path = Path(get_resource_dir()) / "alembic" / "db" / db_name
+    db_path = Path(file_util.get_resource_dir()) / "alembic" / "db" / db_name
     db_path.parent.mkdir(parents=True, exist_ok=True)
     return f"sqlite+aiosqlite:///{db_path.as_posix()}"
 
@@ -124,10 +121,7 @@ def get_db_dialect() -> str:
     }
 
     if dialect not in supported_dialects:
-        raise ValueError(
-            f"Unsupported database dialect: {dialect}. "
-            f"Supported: {', '.join(sorted(supported_dialects))}"
-        )
+        raise ValueError(f"Unsupported database dialect: {dialect}. Supported: {', '.join(sorted(supported_dialects))}")
     return dialect
 
 
@@ -154,7 +148,6 @@ class ProjectInfo:
         self.description = description or ""
         self.authors = authors or []
 
-    @lru_cache
     @classmethod
     def from_pyproject(cls, pyproject_path: str = "") -> "ProjectInfo":
         """
@@ -167,9 +160,10 @@ class ProjectInfo:
             ProjectInfo: An instance containing project metadata.
         """
         if not pyproject_path:
-            pyproject_path = file_util.find_project_root()
+            path = Path(file_util.find_project_root()) / "pyproject.toml"
         else:
             path = Path(pyproject_path)
+        print(f"{path}")
         if not path.exists():
             raise FileNotFoundError(f"{pyproject_path} does not exist")
 
@@ -180,11 +174,7 @@ class ProjectInfo:
         project = data.get("project", {})
         authors = []
         if "authors" in project:
-            authors = [
-                a.get("name", "")
-                for a in project.get("authors", [])
-                if isinstance(a, dict)
-            ]
+            authors = [a.get("name", "") for a in project.get("authors", []) if isinstance(a, dict)]
 
         return cls(
             name=project.get("name", ""),

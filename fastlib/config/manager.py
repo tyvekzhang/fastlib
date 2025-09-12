@@ -5,7 +5,7 @@ import os
 from typing import Any, Dict, Optional, Type
 
 from fastlib import constant
-from fastlib.config.config import BaseConfig
+from fastlib.config.base import BaseConfig
 from fastlib.config.database_config import DatabaseConfig
 from fastlib.config.loader import ConfigLoader
 from fastlib.config.registry import ConfigRegistry

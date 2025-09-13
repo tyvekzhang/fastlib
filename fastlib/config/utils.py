@@ -1,10 +1,10 @@
 # SPDX-License-Identifier: MIT
 
-"""Alembic configuration parser"""
+"""Configuration module util"""
 
 import configparser
 from pathlib import Path
-from typing import Dict, NamedTuple, Optional
+from typing import Any, NamedTuple, Optional
 from urllib.parse import urlparse
 
 from loguru import logger
@@ -17,7 +17,90 @@ try:
 except ModuleNotFoundError:
     import toml as tomllib
 except Exception:
-    logger.error("Cannot find tomllib module, please install it via `uv add tomllib`")
+    logger.error(
+        "Cannot find tomllib module, please install it via `uv add tomllib` or `pip install tomllib`"
+    )
+
+
+class ProjectInfo:
+    """
+    A utility class for loading project metadata from pyproject.toml.
+
+    Attributes:
+        name (str): Project name.
+        version (str): Project version.
+        description (str): Project description.
+        authors (list[str]): List of project authors.
+    """
+
+    def __init__(
+        self,
+        name: str,
+        version: str,
+        description: Optional[str] = None,
+        authors: Optional[list[str]] = None,
+    ):
+        self.name = name
+        self.version = version
+        self.description = description or ""
+        self.authors = authors or []
+
+    @classmethod
+    def from_pyproject(cls, pyproject_path: str = "") -> "ProjectInfo":
+        """
+        Load project information from a pyproject.toml file.
+
+        Args:
+            pyproject_path (str): The path to the pyproject.toml file.
+
+        Returns:
+            ProjectInfo: An instance containing project metadata.
+        """
+        if not pyproject_path:
+            path = Path(file_util.find_project_root()) / "pyproject.toml"
+        else:
+            path = Path(pyproject_path)
+        print(f"{path}")
+        if not path.exists():
+            raise FileNotFoundError(f"{pyproject_path} does not exist")
+
+        # Use tomllib (Python 3.11+) or fall back to toml for older versions.
+        with open(path, "rb" if tomllib.__name__ == "tomllib" else "r") as f:
+            data = tomllib.load(f)
+
+        project = data.get("project", {})
+        authors = []
+        if "authors" in project:
+            authors = [
+                a.get("name", "")
+                for a in project.get("authors", [])
+                if isinstance(a, dict)
+            ]
+
+        return cls(
+            name=project.get("name", ""),
+            version=project.get("version", ""),
+            description=project.get("description", ""),
+            authors=authors,
+        )
+
+    def as_dict(self) -> dict[str, str]:
+        """
+        Convert the project metadata into a dictionary.
+
+        Returns:
+            dict: Project information in key-value pairs.
+        """
+        return {
+            "name": self.name,
+            "version": self.version,
+            "description": self.description,
+            "authors": self.authors,
+        }
+
+    def __str__(self):
+        """Return a readable string representation of the project."""
+        return f"{self.name} v{self.version} — {self.description}"
 
 
 class DbConnectionInfo(NamedTuple):
@@ -121,82 +204,28 @@ def get_db_dialect() -> str:
     }
 
     if dialect not in supported_dialects:
-        raise ValueError(f"Unsupported database dialect: {dialect}. Supported: {', '.join(sorted(supported_dialects))}")
+        raise ValueError(
+            f"Unsupported database dialect: {dialect}. Supported: {', '.join(sorted(supported_dialects))}"
+        )
     return dialect
 
 
-class ProjectInfo:
+def deep_merge_dict(
+    self, base_dict: dict[str, Any], override_dict: dict[str, Any]
+) -> dict[str, Any]:
     """
-    A utility class for loading project metadata from pyproject.toml.
-
-    Attributes:
-        name (str): Project name.
-        version (str): Project version.
-        description (str): Project description.
-        authors (list[str]): List of project authors.
+    Merge two dictionaries recursively.
     """
+    if override_dict is None:
+        return base_dict
 
-    def __init__(
-        self,
-        name: str,
-        version: str,
-        description: Optional[str] = None,
-        authors: Optional[list[str]] = None,
-    ):
-        self.name = name
-        self.version = version
-        self.description = description or ""
-        self.authors = authors or []
-
-    @classmethod
-    def from_pyproject(cls, pyproject_path: str = "") -> "ProjectInfo":
-        """
-        Load project information from a pyproject.toml file.
-
-        Args:
-            pyproject_path (str): The path to the pyproject.toml file.
-
-        Returns:
-            ProjectInfo: An instance containing project metadata.
-        """
-        if not pyproject_path:
-            path = Path(file_util.find_project_root()) / "pyproject.toml"
+    for key, value in override_dict.items():
+        if (
+            isinstance(value, dict)
+            and key in base_dict
+            and isinstance(base_dict[key], dict)
+        ):
+            base_dict[key] = self._merge_dicts(base_dict[key], value)
         else:
-            path = Path(pyproject_path)
-        print(f"{path}")
-        if not path.exists():
-            raise FileNotFoundError(f"{pyproject_path} does not exist")
-
-        # Use tomllib (Python 3.11+) or fall back to toml for older versions.
-        with open(path, "rb" if tomllib.__name__ == "tomllib" else "r") as f:
-            data = tomllib.load(f)
-
-        project = data.get("project", {})
-        authors = []
-        if "authors" in project:
-            authors = [a.get("name", "") for a in project.get("authors", []) if isinstance(a, dict)]
-
-        return cls(
-            name=project.get("name", ""),
-            version=project.get("version", ""),
-            description=project.get("description", ""),
-            authors=authors,
-        )
-
-    def as_dict(self) -> Dict[str, str]:
-        """
-        Convert the project metadata into a dictionary.
-
-        Returns:
-            dict: Project information in key-value pairs.
-        """
-        return {
-            "name": self.name,
-            "version": self.version,
-            "description": self.description,
-            "authors": self.authors,
-        }
-
-    def __str__(self):
-        """Return a readable string representation of the project."""
-        return f"{self.name} v{self.version} — {self.description}"
+            base_dict[key] = value
+    return base_dict

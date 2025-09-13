@@ -43,7 +43,9 @@ class SymmetricEncryption:
         self._fernet = Fernet(self._key)
 
     @classmethod
-    def from_password(cls, password: str, salt: Optional[bytes] = None) -> "SymmetricEncryption":
+    def from_password(
+        cls, password: str, salt: Optional[bytes] = None
+    ) -> "SymmetricEncryption":
         """
         Create encryption instance from password using PBKDF2.
 
@@ -242,7 +244,9 @@ class SimpleSymmetricEncryption:
 class HMACSigner:
     """HMAC-based message signing and verification."""
 
-    def __init__(self, secret_key: Union[str, bytes], algorithm: str = "sha256") -> None:
+    def __init__(
+        self, secret_key: Union[str, bytes], algorithm: str = "sha256"
+    ) -> None:
         """
         Initialize HMAC signer.
 
@@ -325,13 +329,17 @@ class HMACSigner:
         Returns:
             True if signature is valid, False otherwise
         """
-        return self.verify("&".join([f"{k}={v}" for k, v in sorted(data.items())]), signature)
+        return self.verify(
+            "&".join([f"{k}={v}" for k, v in sorted(data.items())]), signature
+        )
 
 
 class RSASigner:
     """RSA-based digital signing and verification."""
 
-    def __init__(self, private_key: Optional[bytes] = None, public_key: Optional[bytes] = None) -> None:
+    def __init__(
+        self, private_key: Optional[bytes] = None, public_key: Optional[bytes] = None
+    ) -> None:
         """
         Initialize RSA signer.
 
@@ -343,13 +351,17 @@ class RSASigner:
             ImportError: If cryptography package is not available
         """
         if not HAS_CRYPTOGRAPHY:
-            raise ImportError("cryptography package is required for RSASigner. Install it with: uv add cryptography")
+            raise ImportError(
+                "cryptography package is required for RSASigner. Install it with: uv add cryptography"
+            )
 
         self._private_key = None
         self._public_key = None
 
         if private_key:
-            self._private_key = serialization.load_pem_private_key(private_key, password=None)
+            self._private_key = serialization.load_pem_private_key(
+                private_key, password=None
+            )
 
         if public_key:
             self._public_key = serialization.load_pem_public_key(public_key)
@@ -369,7 +381,9 @@ class RSASigner:
             ImportError: If cryptography package is not available
         """
         if not HAS_CRYPTOGRAPHY:
-            raise ImportError("cryptography package is required for RSASigner. Install it with: uv add cryptography")
+            raise ImportError(
+                "cryptography package is required for RSASigner. Install it with: uv add cryptography"
+            )
 
         private_key = rsa.generate_private_key(public_exponent=65537, key_size=key_size)
 
@@ -380,7 +394,8 @@ class RSASigner:
         )
 
         public_pem = private_key.public_key().public_bytes(
-            encoding=serialization.Encoding.PEM, format=serialization.PublicFormat.SubjectPublicKeyInfo
+            encoding=serialization.Encoding.PEM,
+            format=serialization.PublicFormat.SubjectPublicKeyInfo,
         )
 
         return private_pem, public_pem
@@ -405,7 +420,11 @@ class RSASigner:
             message = message.encode("utf-8")
 
         signature = self._private_key.sign(
-            message, padding.PSS(mgf=padding.MGF1(hashes.SHA256()), salt_length=padding.PSS.MAX_LENGTH), hashes.SHA256()
+            message,
+            padding.PSS(
+                mgf=padding.MGF1(hashes.SHA256()), salt_length=padding.PSS.MAX_LENGTH
+            ),
+            hashes.SHA256(),
         )
 
         return base64.b64encode(signature).decode("utf-8")
@@ -433,7 +452,10 @@ class RSASigner:
             self._public_key.verify(
                 signature_bytes,
                 message,
-                padding.PSS(mgf=padding.MGF1(hashes.SHA256()), salt_length=padding.PSS.MAX_LENGTH),
+                padding.PSS(
+                    mgf=padding.MGF1(hashes.SHA256()),
+                    salt_length=padding.PSS.MAX_LENGTH,
+                ),
                 hashes.SHA256(),
             )
             return True
@@ -484,7 +506,9 @@ def hash_password(password: str, salt: Optional[str] = None) -> tuple[str, str]:
         hashed = kdf.derive(password.encode("utf-8"))
     else:
         # Fallback to standard library hashlib.pbkdf2_hmac
-        hashed = hashlib.pbkdf2_hmac("sha256", password.encode("utf-8"), salt_bytes, 100000)
+        hashed = hashlib.pbkdf2_hmac(
+            "sha256", password.encode("utf-8"), salt_bytes, 100000
+        )
 
     hashed_b64 = base64.b64encode(hashed).decode("utf-8")
 
@@ -510,7 +534,9 @@ def verify_password(password: str, hashed_password: str, salt: str) -> bool:
         return False
 
 
-def create_symmetric_encryption(key: Optional[bytes] = None) -> Union[SymmetricEncryption, SimpleSymmetricEncryption]:
+def create_symmetric_encryption(
+    key: Optional[bytes] = None,
+) -> Union[SymmetricEncryption, SimpleSymmetricEncryption]:
     """
     Create a symmetric encryption instance using the best available method.
 
@@ -526,7 +552,9 @@ def create_symmetric_encryption(key: Optional[bytes] = None) -> Union[SymmetricE
         return SimpleSymmetricEncryption(key)
 
 
-def encrypt_data(data: Union[str, bytes], key: Optional[bytes] = None) -> tuple[bytes, bytes]:
+def encrypt_data(
+    data: Union[str, bytes], key: Optional[bytes] = None
+) -> tuple[bytes, bytes]:
     """
     Encrypt data using the best available symmetric encryption.
 

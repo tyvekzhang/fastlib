@@ -4,7 +4,7 @@
 import textwrap
 import traceback
 from http import HTTPStatus
-from typing import Any, Dict, Optional
+from typing import Any, Optional
 
 from fastapi import Request
 from fastapi.exception_handlers import http_exception_handler
@@ -22,7 +22,7 @@ from fastlib.exception import HTTPException
 config = load_config()
 
 
-async def extract_request_data(request: Request) -> Dict[str, Any]:
+async def extract_request_data(request: Request) -> dict[str, Any]:
     """
     Extract request data based on content type.
     """
@@ -32,11 +32,18 @@ async def extract_request_data(request: Request) -> Dict[str, Any]:
     try:
         if "application/json" in content_type:
             data["json"] = await request.json()
-        elif "application/x-www-form-urlencoded" in content_type or "multipart/form-data" in content_type:
+        elif (
+            "application/x-www-form-urlencoded" in content_type
+            or "multipart/form-data" in content_type
+        ):
             form = await request.form()
             form_data = {}
             for key, value in form.items():
-                if not hasattr(value, "filename") and not hasattr(value, "file") and not hasattr(value, "files"):
+                if (
+                    not hasattr(value, "filename")
+                    and not hasattr(value, "file")
+                    and not hasattr(value, "files")
+                ):
                     form_data[key] = value
                 else:
                     form_data[key] = f"<file: {value.filename}>"
@@ -55,7 +62,7 @@ async def extract_request_data(request: Request) -> Dict[str, Any]:
     return data
 
 
-def collect_request_info(request: Request) -> Dict[str, Any]:
+def collect_request_info(request: Request) -> dict[str, Any]:
     """
     Collect comprehensive request information for logging.
     """
@@ -64,11 +71,13 @@ def collect_request_info(request: Request) -> Dict[str, Any]:
         "method": request.method,
         "query_params": dict(request.query_params),
         "headers": dict(request.headers),
-        "client": f"{request.client.host}:{request.client.port}" if request.client else None,
+        "client": f"{request.client.host}:{request.client.port}"
+        if request.client
+        else None,
     }
 
 
-def log_exception(exc: Exception, request_info: Dict[str, Any]) -> None:
+def log_exception(exc: Exception, request_info: dict[str, Any]) -> None:
     """
     Log exception with full context information.
     """
@@ -87,7 +96,7 @@ def build_error_response(
     exc: Exception,
     request: Request,
     status_code: int,
-    headers: Optional[Dict[str, str]] = None,
+    headers: Optional[dict[str, str]] = None,
 ) -> Response:
     """
     Build standardized error response.
@@ -187,7 +196,9 @@ async def custom_exception_handler(request: Request, exc: HTTPException):
     )
 
 
-async def request_validation_exception_handler(request: Request, exc: RequestValidationError) -> JSONResponse:
+async def request_validation_exception_handler(
+    request: Request, exc: RequestValidationError
+) -> JSONResponse:
     """
     Handler for RequestValidationError.
     """

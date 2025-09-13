@@ -2,7 +2,7 @@
 """Abstract service with common database operations."""
 
 from abc import ABC, abstractmethod
-from typing import Dict, Generic, TypeVar
+from typing import Generic, TypeVar
 
 from sqlmodel import SQLModel
 
@@ -36,7 +36,9 @@ class BaseService(Generic[T], ABC):
         ...
 
     @abstractmethod
-    async def retrieve_data_list(self, *, current: int, page_size: int, **kwargs) -> tuple[list[T], int]:
+    async def retrieve_data_list(
+        self, *, current: int, page_size: int, **kwargs
+    ) -> tuple[list[T], int]:
         """Return paginated records with optional filters and total count."""
         ...
 
@@ -58,7 +60,7 @@ class BaseService(Generic[T], ABC):
         ...
 
     @abstractmethod
-    async def batch_modify_by_ids(self, *, ids: list[IDType], data: Dict) -> None:
+    async def batch_modify_by_ids(self, *, ids: list[IDType], data: dict) -> None:
         """Update multiple records by their IDs."""
         ...
 

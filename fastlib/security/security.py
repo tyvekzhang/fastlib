@@ -9,12 +9,12 @@ from fastapi.security import OAuth2PasswordBearer
 from jwt.exceptions import InvalidTokenError
 from passlib.context import CryptContext
 
+from fastlib.config.manager import ConfigManager
 from fastlib.schema import CurrentUser
 
 # Configuration
-config = load_config()
-security_config = config.security
-server_config = config.server
+security_config = ConfigManager.get_security_config
+server_config = ConfigManager.get_server_config
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
@@ -37,20 +37,22 @@ def decode_jwt_token(token: str) -> dict[str, Any]:
             security_config.secret_key,
             algorithms=[security_config.algorithm],
         )
-    except InvalidTokenError:
+    except InvalidTokenError as err:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Token has expired. Please log in again.",
-        )
-    except Exception:
+        ) from err
+    except Exception as err:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Could not validate credentials.",
-        )
+        ) from err
 
 
 def get_oauth2_scheme() -> OAuth2PasswordBearer:
-    oauth2_scheme = OAuth2PasswordBearer(tokenUrl=f"{server_config.api_prefix}/v1/auth/auth:signInWithEmailAndPassword")
+    oauth2_scheme = OAuth2PasswordBearer(
+        tokenUrl=f"{server_config.api_prefix}/v1/auth/auth:signInWithEmailAndPassword"
+    )
     return oauth2_scheme
 
 
@@ -65,22 +67,21 @@ def get_current_user() -> Callable[[], CurrentUser]:
     def current_user(
         access_token: str = Depends(get_oauth2_scheme()),
     ) -> CurrentUser:
-        security = load_config().security
-        if not security.enable:
+        if not security_config.enable:
             user_id = 9
             return CurrentUser(user_id=user_id)
         try:
             user_id = get_user_id(access_token)
-        except InvalidTokenError:
+        except InvalidTokenError as err:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail="Your token has expired. Please log in again.",
-            )
-        except Exception:
+            ) from err
+        except Exception as err:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail="Error when decoding the token. Please check your request.",
-            )
+            ) from err
 
         return CurrentUser(user_id=user_id)
 
@@ -102,7 +103,9 @@ def create_token(
     Returns:
         Encoded JWT string
     """
-    expire = datetime.utcnow() + (expires_delta or timedelta(minutes=security_config.refresh_token_expire_minutes))
+    expire = datetime.utcnow() + (
+        expires_delta or timedelta(minutes=security_config.refresh_token_expire_minutes)
+    )
     to_encode = {"exp": expire, "sub": str(subject), "type": token_type}
     return jwt.encode(
         to_encode,

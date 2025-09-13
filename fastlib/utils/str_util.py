@@ -17,4 +17,6 @@ def snake_to_title(snake_str: str) -> str:
     """
     if not isinstance(snake_str, str):
         raise TypeError("Input must be a string")
-    return " ".join(word for word in snake_str.strip("_").split("_") if word).capitalize()
+    return " ".join(
+        word for word in snake_str.strip("_").split("_") if word
+    ).capitalize()

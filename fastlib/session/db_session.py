@@ -15,13 +15,17 @@ except ImportError:
 
 
 @asynccontextmanager
-async def db_session(*, env: str = None, db_url: str = None, engine=None) -> AsyncSession:
+async def db_session(
+    *, env: str = None, db_url: str = None, engine=None
+) -> AsyncSession:
     """Creates a context with an open SQLAlchemy async session."""
     if engine is None:
         if db_url is None:
             db_url = manager.get_database_url(env=env)
         engine = create_async_engine(db_url, echo=True)
-    async_session = async_sessionmaker(bind=engine, class_=AsyncSession, autocommit=False, autoflush=True)
+    async_session = async_sessionmaker(
+        bind=engine, class_=AsyncSession, autocommit=False, autoflush=True
+    )
     async with async_session() as session:
         yield session
     await engine.dispose()

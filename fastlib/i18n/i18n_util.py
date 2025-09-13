@@ -2,7 +2,7 @@
 Internationalization utility class supporting Chinese and English language switching
 """
 
-from typing import Any, Dict, Optional
+from typing import Any, Optional
 
 from .i18n_context import I18nContext
 from .i18n_messages import get_message
@@ -109,7 +109,7 @@ class I18nUtil:
         language: Optional[Language] = None,
         details: Optional[str] = None,
         error_code: int = 400,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Create error response
 
@@ -163,7 +163,7 @@ class I18nUtil:
         data: Any,
         language: Optional[Language] = None,
         message_key: str = "search_success",
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Create success response
 
@@ -221,13 +221,13 @@ def create_error_response(
     language: Optional[Language] = None,
     details: Optional[str] = None,
     error_code: int = 400,
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """Create error response"""
     return I18nUtil.create_error_response(error_key, language, details, error_code)
 
 
 def create_success_response(
     data: Any, language: Optional[Language] = None, message_key: str = "search_success"
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """Create success response"""
     return I18nUtil.create_success_response(data, language, message_key)

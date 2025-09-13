@@ -1,2 +1,4 @@
 # SPDX-License-Identifier: MIT
-"""Fast Web Application Libraries Package."""
+"""Fastlib Application Libraries Package."""
+
+from .config import ConfigManager as config_manager

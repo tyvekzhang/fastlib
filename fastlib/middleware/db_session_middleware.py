@@ -2,7 +2,7 @@
 """Session proxy used in the project"""
 
 from contextvars import ContextVar
-from typing import Dict, Optional, Union
+from typing import Optional, Union
 
 from sqlalchemy.engine import Engine
 from sqlalchemy.engine.url import URL
@@ -34,8 +34,8 @@ def create_middleware_and_session_proxy():
             app: ASGIApp,
             db_url: Optional[Union[str, URL]] = None,
             custom_engine: Optional[Engine] = None,
-            engine_args: Dict = None,
-            session_args: Dict = None,
+            engine_args: dict = None,
+            session_args: dict = None,
             commit_on_exit: bool = True,
         ):
             """Initialize the middleware with database configuration."""
@@ -45,7 +45,9 @@ def create_middleware_and_session_proxy():
             session_args = session_args or {}
 
             if not custom_engine and not db_url:
-                raise ValueError("You need to pass a db_url or a custom_engine parameter.")
+                raise ValueError(
+                    "You need to pass a db_url or a custom_engine parameter."
+                )
             if not custom_engine:
                 engine = create_async_engine(db_url, **engine_args)
             else:
@@ -82,7 +84,7 @@ def create_middleware_and_session_proxy():
     class DBSession(metaclass=DBSessionMeta):
         """Context manager for database sessions."""
 
-        def __init__(self, session_args: Dict = None, commit_on_exit: bool = False):
+        def __init__(self, session_args: dict = None, commit_on_exit: bool = False):
             """Initialize session context manager."""
             self.token = None
             self.session_args = session_args or {}

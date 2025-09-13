@@ -2,14 +2,13 @@
 """Thread-safe async SQLAlchemy engine management."""
 
 from threading import Lock
-from typing import Dict
 
 from sqlalchemy.ext.asyncio import AsyncEngine, create_async_engine
 
 from fastlib.config import manager
 
 # Global engine cache with thread safety
-_engine_map: Dict[str, AsyncEngine] = {}
+_engine_map: dict[str, AsyncEngine] = {}
 _lock = Lock()
 
 async_engine: AsyncEngine

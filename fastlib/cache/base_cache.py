@@ -7,7 +7,7 @@ for different caching implementations like Redis, memory cache, etc.
 
 from abc import ABC, abstractmethod
 from contextlib import asynccontextmanager
-from typing import Any, Dict, List, Optional
+from typing import Any, Optional
 
 
 class CacheError(Exception):
@@ -90,7 +90,7 @@ class Cache(ABC):
         pass
 
     @abstractmethod
-    async def hgetall(self, name: str) -> Dict[str, Any]:
+    async def hgetall(self, name: str) -> dict[str, Any]:
         """Get all fields from a hash."""
         pass
 
@@ -120,7 +120,7 @@ class Cache(ABC):
         pass
 
     @abstractmethod
-    async def lrange(self, name: str, start: int = 0, end: int = -1) -> List[Any]:
+    async def lrange(self, name: str, start: int = 0, end: int = -1) -> list[Any]:
         """Get a range of values from a list."""
         pass
 
@@ -130,7 +130,7 @@ class Cache(ABC):
         pass
 
     @abstractmethod
-    async def smembers(self, name: str) -> List[Any]:
+    async def smembers(self, name: str) -> list[Any]:
         """Get all members of a set."""
         pass
 

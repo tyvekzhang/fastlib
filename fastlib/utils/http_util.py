@@ -113,7 +113,9 @@ def http_get(
         return _handle_response(response, url)
 
 
-def http_post(url: str, data: Any, headers: Optional[dict[str, Any]] = None, timeout: float = 10.0) -> Any:
+def http_post(
+    url: str, data: Any, headers: Optional[dict[str, Any]] = None, timeout: float = 10.0
+) -> Any:
     """
     Make a synchronous HTTP POST request.
 
@@ -213,7 +215,9 @@ async def async_http_post(
     )
 
 
-def download_file(file_url: str, directory_path: str, timeout: int = 60, verify_ssl: bool = True) -> Optional[str]:
+def download_file(
+    file_url: str, directory_path: str, timeout: int = 60, verify_ssl: bool = True
+) -> Optional[str]:
     """
     Download a file from a URL to a local directory.
 
@@ -244,7 +248,9 @@ def download_file(file_url: str, directory_path: str, timeout: int = 60, verify_
                     logger.info(f"Successfully downloaded file to {file_path}")
                     return file_path
                 else:
-                    logger.error(f"Download failed with status code: {response.status_code}")
+                    logger.error(
+                        f"Download failed with status code: {response.status_code}"
+                    )
                     return None
     except httpx.TimeoutException:
         logger.error("Download request timed out")

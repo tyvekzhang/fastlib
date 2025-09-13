@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: MIT
 """Common service impl with frequently db operations"""
 
-from typing import Dict, Generic, TypeVar
+from typing import Generic, TypeVar
 
 from pydantic import BaseModel
 
@@ -36,7 +36,9 @@ class BaseServiceImpl(Generic[M, T], BaseService[T]):
         list[T],
         int,
     ]:
-        return await self.mapper.select_by_page(current=current, page_size=page_size, **kwargs)
+        return await self.mapper.select_by_page(
+            current=current, page_size=page_size, **kwargs
+        )
 
     async def retrieve_ordered_data_list(
         self,
@@ -61,7 +63,7 @@ class BaseServiceImpl(Generic[M, T], BaseService[T]):
         if affect_row != 1:
             raise ValueError
 
-    async def batch_modify_by_ids(self, *, ids: list[IDType], data: Dict) -> None:
+    async def batch_modify_by_ids(self, *, ids: list[IDType], data: dict) -> None:
         affect_row: int = await self.mapper.batch_update_by_ids(ids=ids, data=data)
         if len(ids) != affect_row:
             raise ValueError

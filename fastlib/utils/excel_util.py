@@ -5,7 +5,7 @@
 import io
 from contextlib import contextmanager
 from datetime import datetime
-from typing import Optional, Type
+from typing import Optional
 
 import pandas as pd
 from loguru import logger
@@ -21,12 +21,14 @@ class ExcelExporter:
 
     DEFAULT_FONT = Font(name="Microsoft YaHei", size=11)
     HEADER_FONT = Font(name="Microsoft YaHei", size=11, bold=True)
-    HEADER_FILL = PatternFill(start_color="E0E0E0", end_color="E0E0E0", fill_type="solid")
+    HEADER_FILL = PatternFill(
+        start_color="E0E0E0", end_color="E0E0E0", fill_type="solid"
+    )
     HEADER_ALIGNMENT = Alignment(horizontal="center", vertical="center")
 
     def __init__(
         self,
-        schema: Type[BaseModel],
+        schema: type[BaseModel],
         file_name: str,
         sheet_name: Optional[str] = None,
         include_timestamp: bool = True,
@@ -44,7 +46,9 @@ class ExcelExporter:
             return f"{self.file_name}_{timestamp}.xlsx"
         return f"{self.file_name}.xlsx"
 
-    def _prepare_dataframe(self, data_list: Optional[list[BaseModel]] = None) -> pd.DataFrame:
+    def _prepare_dataframe(
+        self, data_list: Optional[list[BaseModel]] = None
+    ) -> pd.DataFrame:
         """Convert Pydantic models to DataFrame."""
         if not data_list:
             return pd.DataFrame(columns=self.field_names)
@@ -88,7 +92,9 @@ class ExcelExporter:
         finally:
             writer.close()
 
-    async def export(self, data_list: Optional[list[BaseModel]] = None) -> StreamingResponse:
+    async def export(
+        self, data_list: Optional[list[BaseModel]] = None
+    ) -> StreamingResponse:
         """Export data to Excel file."""
         filename = self._generate_filename()
         stream = io.BytesIO()

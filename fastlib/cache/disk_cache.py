@@ -5,7 +5,7 @@ import json
 import threading
 import time
 from contextlib import asynccontextmanager
-from typing import Any, Dict, List, Optional
+from typing import Any, Optional, list
 
 import diskcache
 
@@ -15,14 +15,14 @@ from fastlib.cache.base_cache import Cache, CacheError
 class PageCache(Cache):
     def __init__(self, directory: str = "./.diskcache"):
         self.cache = diskcache.Cache(directory)
-        self._locks: Dict[str, threading.Lock] = {}
+        self._locks: dict[str, threading.Lock] = {}
 
     async def ping(self) -> bool:
         try:
             self.cache.set("__ping__", "pong", expire=1)
             return True
         except Exception as e:
-            raise CacheError("Ping failed", e)
+            raise CacheError("Ping failed", e) from e
 
     async def set(
         self,
@@ -90,7 +90,7 @@ class PageCache(Cache):
         data = self.cache.get(name, {})
         return data.get(key) if isinstance(data, dict) else None
 
-    async def hgetall(self, name: str) -> Dict[str, Any]:
+    async def hgetall(self, name: str) -> dict[str, Any]:
         data = self.cache.get(name, {})
         return data if isinstance(data, dict) else {}
 
@@ -106,8 +106,8 @@ class PageCache(Cache):
         self.cache.set(name, data)
         return removed
 
-    # ---------------- List ----------------
-    def _get_list(self, key: str) -> List[Any]:
+    # ---------------- list ----------------
+    def _get_list(self, key: str) -> list[Any]:
         data = self.cache.get(key)
         if data is None:
             return []
@@ -120,7 +120,7 @@ class PageCache(Cache):
             return data
         return []
 
-    def _set_list(self, key: str, value: List[Any]):
+    def _set_list(self, key: str, value: list[Any]):
         self.cache.set(key, json.dumps(value))
 
     async def lpush(self, name: str, *values: Any) -> int:
@@ -152,7 +152,7 @@ class PageCache(Cache):
         self._set_list(name, lst)
         return val
 
-    async def lrange(self, name: str, start: int = 0, end: int = -1) -> List[Any]:
+    async def lrange(self, name: str, start: int = 0, end: int = -1) -> list[Any]:
         lst = self._get_list(name)
         if end == -1:
             end = len(lst) - 1
@@ -168,7 +168,7 @@ class PageCache(Cache):
         self.cache.set(name, current)
         return len(current) - before
 
-    async def smembers(self, name: str) -> List[Any]:
+    async def smembers(self, name: str) -> list[Any]:
         current = self.cache.get(name, set())
         return list(current) if isinstance(current, set) else []
 
@@ -184,7 +184,11 @@ class PageCache(Cache):
 
     # ---------------- Lock (simple thread-based) ----------------
     async def acquire_lock(
-        self, lock_name: str, timeout: int = 10, blocking_timeout: int = 5, thread_local: bool = True
+        self,
+        lock_name: str,
+        timeout: int = 10,
+        blocking_timeout: int = 5,
+        thread_local: bool = True,
     ) -> bool:
         lock = self._locks.setdefault(lock_name, threading.Lock())
         start = time.time()

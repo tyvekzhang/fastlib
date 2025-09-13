@@ -48,11 +48,15 @@ class SnowflakeIDGenerator:
         # Shift offsets
         self.WORKER_ID_SHIFT = self.SEQUENCE_BITS
         self.DATACENTER_ID_SHIFT = self.SEQUENCE_BITS + self.WORKER_ID_BITS
-        self.TIMESTAMP_LEFT_SHIFT = self.SEQUENCE_BITS + self.WORKER_ID_BITS + self.DATACENTER_ID_BITS
+        self.TIMESTAMP_LEFT_SHIFT = (
+            self.SEQUENCE_BITS + self.WORKER_ID_BITS + self.DATACENTER_ID_BITS
+        )
 
         # Validate parameters
         if datacenter_id > self.MAX_DATACENTER_ID or datacenter_id < 0:
-            raise ValueError(f"Datacenter ID must be between 0 and {self.MAX_DATACENTER_ID}")
+            raise ValueError(
+                f"Datacenter ID must be between 0 and {self.MAX_DATACENTER_ID}"
+            )
         if worker_id > self.MAX_WORKER_ID or worker_id < 0:
             raise ValueError(f"Worker ID must be between 0 and {self.MAX_WORKER_ID}")
 
@@ -159,7 +163,9 @@ class SnowflakeIDGenerator:
             - datetime: Human-readable datetime string
         """
         timestamp = (snowflake_id >> self.TIMESTAMP_LEFT_SHIFT) + self.EPOCH
-        datacenter_id = (snowflake_id >> self.DATACENTER_ID_SHIFT) & self.MAX_DATACENTER_ID
+        datacenter_id = (
+            snowflake_id >> self.DATACENTER_ID_SHIFT
+        ) & self.MAX_DATACENTER_ID
         worker_id = (snowflake_id >> self.WORKER_ID_SHIFT) & self.MAX_WORKER_ID
         sequence = snowflake_id & self.MAX_SEQUENCE
 
@@ -168,7 +174,9 @@ class SnowflakeIDGenerator:
             "datacenter_id": datacenter_id,
             "worker_id": worker_id,
             "sequence": sequence,
-            "datetime": time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(timestamp / 1000)),
+            "datetime": time.strftime(
+                "%Y-%m-%d %H:%M:%S", time.localtime(timestamp / 1000)
+            ),
         }
 
 
@@ -177,7 +185,9 @@ _snowflake_generator: Optional[SnowflakeIDGenerator] = None
 _generator_lock = threading.Lock()
 
 
-def get_snowflake_generator(datacenter_id: int = 1, worker_id: int = 1) -> SnowflakeIDGenerator:
+def get_snowflake_generator(
+    datacenter_id: int = 1, worker_id: int = 1
+) -> SnowflakeIDGenerator:
     """
     Get the global Snowflake ID generator instance (singleton pattern)
 

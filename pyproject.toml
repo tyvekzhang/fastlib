@@ -1,6 +1,6 @@
 [project]
 name = "fastlib-py"
-version = "0.1.4"
+version = "0.1.6"
 description = "Fastlib, high performance, easy to use, fast to code, ready for production"
 readme = "README.md"
 keywords = [
@@ -61,7 +61,7 @@ docs = [
 ]
 
 [tool.ruff]
-line-length = 120
+line-length = 88
 
 include = [ "fastlib/**/*.py", "main.py" ]
 exclude = [ "doc/**/*.py" ]

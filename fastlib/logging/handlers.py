@@ -59,7 +59,9 @@ class Logger:
         # Use provided values or fall back to config
         self.log_dir = Path(log_dir) if log_dir else config.log_dir
         self.app_name = app_name or config.app_name
-        self.enable_console = enable_console if enable_console is not None else config.enable_console_log
+        self.enable_console = (
+            enable_console if enable_console is not None else config.enable_console_log
+        )
 
         # Merge additional configuration overrides
         self._config_overrides = kwargs
@@ -149,7 +151,9 @@ class Logger:
         """Log a warning message."""
         self._bind_logger().warning(message, **kwargs)
 
-    def error(self, message: str, exc_info: Optional[Exception] = None, **kwargs: Any) -> None:
+    def error(
+        self, message: str, exc_info: Optional[Exception] = None, **kwargs: Any
+    ) -> None:
         """
         Log an error message with optional exception information.
         """
@@ -159,7 +163,9 @@ class Logger:
         else:
             self._bind_logger().error(message, **kwargs)
 
-    def critical(self, message: str, exc_info: Optional[Exception] = None, **kwargs: Any) -> None:
+    def critical(
+        self, message: str, exc_info: Optional[Exception] = None, **kwargs: Any
+    ) -> None:
         """
         Log a critical error message.
         """
@@ -178,7 +184,9 @@ class Logger:
         exc_message = str(exc_info)
 
         # Get formatted traceback
-        tb_lines = traceback.format_exception(type(exc_info), exc_info, exc_info.__traceback__)
+        tb_lines = traceback.format_exception(
+            type(exc_info), exc_info, exc_info.__traceback__
+        )
         stack_trace = "".join(tb_lines).strip()
 
         return f"Error: {message}\nException: {exc_type}: {exc_message}\nTraceback:\n{stack_trace}"

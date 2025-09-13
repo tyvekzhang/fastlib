@@ -2,9 +2,10 @@
 """Configuration loading and management with dynamic registry support."""
 
 import os
-from typing import Any, Dict, Optional, Type
+from typing import Any, Optional, type
 
 from fastlib import constant
+from fastlib.config import utils as config_util
 from fastlib.config.base import BaseConfig
 from fastlib.config.database_config import DatabaseConfig
 from fastlib.config.loader import ConfigLoader
@@ -27,7 +28,7 @@ def config_class(name: str):
             pass
     """
 
-    def decorator(cls: Type[BaseConfig]):
+    def decorator(cls: type[BaseConfig]):
         ConfigRegistry.register(name, cls)
         return cls
 
@@ -37,13 +38,15 @@ def config_class(name: str):
 class ConfigManager:
     """Global configuration manager with static methods and dynamic registry support."""
 
-    _global_config_dict: Optional[Dict[str, Any]] = None
-    _config_instances: Dict[str, BaseConfig] = {}
+    _global_config_dict: Optional[dict[str, Any]] = None
+    _config_instances: dict[str, BaseConfig] = {}
     _initialized: bool = False
 
     @staticmethod
     def initialize_global_config(
-        env: Optional[str] = None, config_file: Optional[str] = None, custom_configs: Optional[Dict[str, Any]] = None
+        env: Optional[str] = None,
+        config_file: Optional[str] = None,
+        custom_configs: Optional[dict[str, Any]] = None,
     ) -> None:
         """
         Initialize global configuration.
@@ -67,7 +70,7 @@ class ConfigManager:
 
         # Merge custom configurations if provided
         if custom_configs:
-            config_dict.update(custom_configs)
+            config_dict = config_util.deep_merge_dict(config_dict, custom_configs)
 
         ConfigManager._global_config_dict = config_dict
 
@@ -101,29 +104,20 @@ class ConfigManager:
         for config_name in ConfigRegistry.list_registered():
             config_data = ConfigManager._global_config_dict.get(config_name, {})
 
-            try:
-                instance = ConfigRegistry.create_instance(config_name, {config_name: config_data})
-                if instance:
-                    ConfigManager._config_instances[config_name] = instance
-            except Exception as e:
-                # Log error but continue with other configs
-                print(f"Warning: Failed to initialize {config_name} config: {e}")
-                # Create default instance for critical configs
-                if config_name in ["server", "database", "security"]:
-                    config_class = ConfigRegistry.get_config_class(config_name)
-                    if config_class:
-                        default_instance = ConfigManager._create_default_instance(config_class)
-                        if default_instance:
-                            ConfigManager._config_instances[config_name] = default_instance
+            if not config_data:
+                continue
 
-    @staticmethod
-    def _create_default_instance(config_class) -> Optional[BaseConfig]:
-        """Create a default instance of a config class."""
-        try:
-            # Try to create with default parameters
-            return config_class()
-        except Exception:
-            return None
+            try:
+                instance = ConfigRegistry.create_instance(
+                    config_name, {config_name: config_data}
+                )
+                if not instance:
+                    raise ValueError(f"Config instance for {config_name} returned None")
+                ConfigManager._config_instances[config_name] = instance
+            except Exception as e:
+                raise ValueError(
+                    f"Failed to initialize {config_name} config: {e}"
+                ) from e
 
     @staticmethod
     def get_config_instance(config_name: str) -> Optional[BaseConfig]:
@@ -140,7 +134,9 @@ class ConfigManager:
             RuntimeError: If configuration is not initialized
         """
         if not ConfigManager._initialized:
-            raise RuntimeError("Configuration not initialized. Call ConfigManager.initialize_global_config() first.")
+            raise RuntimeError(
+                "Configuration not initialized. Call ConfigManager.initialize_global_config() first."
+            )
         return ConfigManager._config_instances.get(config_name)
 
     @staticmethod
@@ -183,19 +179,6 @@ class ConfigManager:
         return instance
 
     @staticmethod
-    def add_custom_config(name: str, config_instance: BaseConfig) -> None:
-        """
-        Add a custom configuration to the global config.
-
-        Args:
-            name: Configuration name
-            config_instance: Configuration instance
-        """
-        if not ConfigManager._initialized:
-            raise RuntimeError("Configuration not initialized. Call ConfigManager.initialize_global_config() first.")
-        ConfigManager._config_instances[name] = config_instance
-
-    @staticmethod
     def is_initialized() -> bool:
         """
         Check if the configuration manager is initialized.
@@ -206,28 +189,7 @@ class ConfigManager:
         return ConfigManager._initialized
 
     @staticmethod
-    def reset() -> None:
-        """
-        Reset the configuration manager (mainly for testing).
-        """
-        ConfigManager._global_config_dict = None
-        ConfigManager._config_instances.clear()
-        ConfigManager._initialized = False
-
-    @staticmethod
-    def list_config_names() -> list[str]:
-        """
-        List all available configuration names.
-
-        Returns:
-            List of configuration names
-        """
-        if not ConfigManager._initialized:
-            return []
-        return list(ConfigManager._config_instances.keys())
-
-    @staticmethod
-    def get_config_dict() -> Optional[Dict[str, Any]]:
+    def get_config_dict() -> Optional[dict[str, Any]]:
         """
         Get the raw configuration dictionary.
 

@@ -2,7 +2,7 @@
 """Configuration registry for dynamic configuration class management."""
 
 # Import BaseConfig from config module to avoid circular imports
-from typing import Any, Optional, type
+from typing import Any, Optional
 
 
 class ConfigRegistry:

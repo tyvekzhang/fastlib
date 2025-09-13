@@ -2,7 +2,7 @@
 """Sqlmodel impl that handle database operation"""
 
 from collections.abc import Sequence
-from typing import Any, Generic, Optional, TypeVar, type
+from typing import Any, Generic, Optional, TypeVar
 
 from pydantic import BaseModel
 from sqlmodel import SQLModel, and_, delete, func, insert, select, update

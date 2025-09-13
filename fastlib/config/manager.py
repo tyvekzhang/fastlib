@@ -2,7 +2,7 @@
 """Configuration loading and management with dynamic registry support."""
 
 import os
-from typing import Any, Optional, type
+from typing import Any, Optional
 
 from fastlib import constant
 from fastlib.config import utils as config_util

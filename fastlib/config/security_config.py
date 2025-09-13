@@ -2,7 +2,6 @@
 """Security configuration for the application."""
 
 import os
-from typing import list
 
 from fastlib.config.base import BaseConfig
 

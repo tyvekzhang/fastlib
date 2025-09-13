@@ -43,6 +43,25 @@ class ConfigManager:
     _initialized: bool = False
 
     @staticmethod
+    def register_custom_configs(module) -> None:
+        """
+        Discover and register all custom classes.
+
+        Args:
+            module: The Python module to search for config classes
+        """
+        for attr_name in dir(module):
+            attr = getattr(module, attr_name)
+            if isinstance(attr, type) and issubclass(attr, BaseConfig):
+                if getattr(attr, "__is_config_class__", False):
+                    name = getattr(attr, "__config_name__", None)
+                    if name:
+                        try:
+                            ConfigRegistry.register(name, attr)
+                        except ValueError:
+                            pass
+
+    @staticmethod
     def initialize_global_config(
         env: Optional[str] = None,
         config_file: Optional[str] = None,

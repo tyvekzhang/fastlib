@@ -15,11 +15,9 @@ from loguru import logger
 from pydantic_core._pydantic_core import ValidationError  # noqa
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
-from fastlib.config.manager import load_config
+from fastlib import ConfigManager
 from fastlib.enums.enum import CommonErrorCode
 from fastlib.exception import HTTPException
-
-config = load_config()
 
 
 async def extract_request_data(request: Request) -> dict[str, Any]:
@@ -105,7 +103,7 @@ def build_error_response(
         return Response(status_code=status_code, headers=headers)
 
     error_message = "Internal server error"
-    if config.server.debug:
+    if ConfigManager.get_server_config().debug:
         error_message = str(exc)
 
     return JSONResponse(

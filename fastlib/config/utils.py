@@ -211,7 +211,7 @@ def get_db_dialect() -> str:
 
 
 def deep_merge_dict(
-    self, base_dict: dict[str, Any], override_dict: dict[str, Any]
+    base_dict: dict[str, Any], override_dict: dict[str, Any]
 ) -> dict[str, Any]:
     """
     Merge two dictionaries recursively.
@@ -225,7 +225,7 @@ def deep_merge_dict(
             and key in base_dict
             and isinstance(base_dict[key], dict)
         ):
-            base_dict[key] = self._merge_dicts(base_dict[key], value)
+            base_dict[key] = deep_merge_dict(base_dict[key], value)
         else:
             base_dict[key] = value
     return base_dict

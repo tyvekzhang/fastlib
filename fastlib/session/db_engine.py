@@ -5,7 +5,7 @@ from threading import Lock
 
 from sqlalchemy.ext.asyncio import AsyncEngine, create_async_engine
 
-from fastlib.config import manager
+from fastlib import ConfigManager
 
 # Global engine cache with thread safety
 _engine_map: dict[str, AsyncEngine] = {}
@@ -22,7 +22,7 @@ def get_async_engine() -> AsyncEngine:
         AsyncEngine: Configured SQLAlchemy async engine based on application config.
     """
     global async_engine
-    database_config = manager.load_config().database
+    database_config = ConfigManager.get_database_config()
     if database_config.dialect.lower() == "sqlite":
         async_engine = create_async_engine(
             url=database_config.url,

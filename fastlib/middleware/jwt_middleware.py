@@ -9,15 +9,14 @@ from loguru import logger
 from src.main.app.enums.auth_error_code import AuthErrorCode
 from starlette.responses import JSONResponse
 
-from fastlib import constant, security
-from fastlib.config import manager
+from fastlib import ConfigManager, constant, security
 from fastlib.context.contextvars import current_user_id
 from fastlib.enums.enum import MediaTypeEnum
 from fastlib.schema import UserCredential
 
 # Load configuration
-server_config = manager.load_server_config()
-security_config = manager.load_security_config()
+server_config = ConfigManager.get_server_config()
+security_config = ConfigManager.get_security_config()
 
 
 async def jwt_middleware(request: Request, call_next):
@@ -50,7 +49,6 @@ async def jwt_middleware(request: Request, call_next):
         if not security_config.enable:
             return await call_next(request)
 
-        print(request.headers)
         auth_header = request.headers.get(constant.AUTHORIZATION)
         if auth_header:
             try:

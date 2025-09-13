@@ -1,12 +1,8 @@
 """
-Logger - A comprehensive logging utility for the application.
-
-This module provides a centralized logging system with correlation ID support,
-structured logging, and configurable output handlers.
+A comprehensive logging tool for the application.
 """
 
 import sys
-import traceback
 from pathlib import Path
 from typing import Any, Optional, Union
 
@@ -14,29 +10,59 @@ from asgi_correlation_id import correlation_id
 from loguru import logger
 
 from fastlib.config.manager import ConfigManager
+from fastlib.config.utils import ProjectInfo
 from fastlib.logging.config import LogConfig
 
 
 class Logger:
     """
-    Enhanced logging utility with correlation ID support and structured logging.
-
-    Features:
-    - Correlation ID tracking
-    - Structured logging
-    - Configurable handlers
-    - Performance and operation logging
+    Enhanced logging tool with correlation ID support and structured logging.
     """
 
+    _instances: dict[str, "Logger"] = {}
     _config: Optional[LogConfig] = None
+    _is_configured: bool = False
+
+    @classmethod
+    def initialize(cls, **kwargs) -> None:
+        """
+        Initialize the logging system with optional configuration overrides.
+
+        Args:
+            **kwargs: Configuration overrides for logging
+        """
+        if not cls._is_configured:
+            instance = cls.get_instance(**kwargs)
+            cls._is_configured = True
+            return instance
+        return cls.get_instance()
 
     @classmethod
     def _get_config(cls) -> LogConfig:
         """Lazy load configuration."""
         if cls._config is None:
-            config_dict = ConfigManager.get_config_dict().get("log", {})
-            cls._config = LogConfig(**config_dict)
+            cls._config = ConfigManager.get_config_instance("log")
         return cls._config
+
+    @classmethod
+    def get_instance(cls, name: Optional[str] = None, **kwargs) -> "Logger":
+        """
+        Get or create a named logger instance.
+
+        Args:
+            name: Logger instance name
+            **kwargs: Configuration overrides
+
+        Returns:
+            Logger instance
+        """
+        if not name:
+            project_config = ProjectInfo.from_pyproject()
+            name = project_config.name
+
+        if name not in cls._instances:
+            cls._instances[name] = cls(**kwargs)
+        return cls._instances[name]
 
     def __init__(
         self,
@@ -45,16 +71,8 @@ class Logger:
         enable_console: Optional[bool] = None,
         **kwargs,
     ):
-        """
-        Initialize the Logger with optional overrides.
-
-        Args:
-            log_dir: Directory to store log files
-            app_name: Application name for log file naming
-            enable_console: Whether to enable console output
-            **kwargs: Additional configuration overrides
-        """
-        config = self._get_config()
+        """Initialize the Logger with optional overrides."""
+        config: LogConfig = self._get_config()
 
         # Use provided values or fall back to config
         self.log_dir = Path(log_dir) if log_dir else config.log_dir
@@ -63,10 +81,14 @@ class Logger:
             enable_console if enable_console is not None else config.enable_console_log
         )
 
-        # Merge additional configuration overrides
+        # Store configuration for reference
+        self._config = config
         self._config_overrides = kwargs
 
-        self._setup_logging()
+        # Only setup logging once globally
+        if not self.__class__._is_configured:
+            self._setup_logging()
+            self.__class__._is_configured = True
 
     def _setup_logging(self) -> None:
         """Configure loguru logger with handlers based on configuration."""
@@ -78,6 +100,13 @@ class Logger:
 
         config = self._get_config()
 
+        # Common handler configuration
+        common_config = {
+            "backtrace": True,
+            "diagnose": True,
+            "enqueue": config.enable_async,
+        }
+
         # Console handler
         if self.enable_console:
             logger.add(
@@ -85,42 +114,51 @@ class Logger:
                 format=self._get_format_string(),
                 level=config.log_level,
                 colorize=True,
-                backtrace=True,
-                diagnose=True,
+                **common_config,
             )
 
-        # Main file handler with rotation and retention
+        # Main file handler
+        rotation = config.max_file_size or config.log_rotation
         log_file_pattern = self.log_dir / config.log_file_pattern
 
         logger.add(
             str(log_file_pattern),
             format=self._get_format_string(),
             level=config.log_level,
-            rotation=config.log_rotation,
+            rotation=rotation,
             retention=config.log_retention,
             compression="zip",
-            backtrace=True,
-            diagnose=True,
-            enqueue=True,  # Async logging for better performance
+            serialize=config.enable_json_logs,
+            **common_config,
         )
 
-        # Separate error log handler
-        error_log_pattern = self.log_dir / config.error_log_file_pattern
-
-        logger.add(
-            str(error_log_pattern),
-            format=self._get_format_string(),
-            level="ERROR",
-            rotation=config.error_log_rotation,
-            retention=config.error_log_retention,
-            compression="zip",
-            backtrace=True,
-            diagnose=True,
-            enqueue=True,
-        )
+        # Error log handler - only add if log level is not ERROR
+        if config.log_level != "ERROR":
+            error_log_pattern = self.log_dir / config.error_log_file_pattern
+            logger.add(
+                str(error_log_pattern),
+                format=self._get_format_string(),
+                level="ERROR",
+                rotation=config.error_log_rotation,
+                retention=config.error_log_retention,
+                compression="zip",
+                serialize=config.enable_json_logs,
+                **common_config,
+            )
 
     def _get_format_string(self) -> str:
         """Get the log format string with correlation ID."""
+        config = self._get_config()
+
+        if config.enable_json_logs:
+            # JSON logs don't need format string
+            return "{message}"
+
+        # Check if format already contains correlation_id
+        if "correlation_id" in config.log_format:
+            return config.log_format
+
+        # Insert correlation ID into the format
         return (
             "{time:YYYY-MM-DD HH:mm:ss.SSS} | {level: <8} | "
             "[CID:{extra[correlation_id]}] | "
@@ -135,65 +173,49 @@ class Logger:
         except Exception:
             return "SYSTEM"
 
-    def _bind_logger(self) -> logger:
-        """Bind logger with current correlation ID."""
-        return logger.bind(correlation_id=self._get_correlation_id())
+    def _bind_logger(self, **extra_context: Any):
+        """Bind logger with correlation ID and app name."""
+        context = {
+            "correlation_id": self._get_correlation_id(),
+            "app_name": self.app_name,
+        }
+        context.update(extra_context)
+        return logger.bind(**context)
 
     def debug(self, message: str, **kwargs: Any) -> None:
         """Log a debug message."""
-        self._bind_logger().debug(message, **kwargs)
+        self._bind_logger(**kwargs).debug(message)
 
     def info(self, message: str, **kwargs: Any) -> None:
         """Log an info message."""
-        self._bind_logger().info(message, **kwargs)
+        self._bind_logger(**kwargs).info(message)
 
     def warning(self, message: str, **kwargs: Any) -> None:
         """Log a warning message."""
-        self._bind_logger().warning(message, **kwargs)
+        self._bind_logger(**kwargs).warning(message)
 
     def error(
         self, message: str, exc_info: Optional[Exception] = None, **kwargs: Any
     ) -> None:
-        """
-        Log an error message with optional exception information.
-        """
+        """Log an error message with optional exception information."""
+        bound_logger = self._bind_logger(**kwargs)
+
         if exc_info is not None:
-            error_details = self._format_exception_details(message, exc_info)
-            self._bind_logger().error(error_details, **kwargs)
+            bound_logger.opt(exception=exc_info).error(message)
         else:
-            self._bind_logger().error(message, **kwargs)
+            bound_logger.error(message)
 
     def critical(
         self, message: str, exc_info: Optional[Exception] = None, **kwargs: Any
     ) -> None:
-        """
-        Log a critical error message.
-        """
+        """Log a critical error message."""
+        bound_logger = self._bind_logger(**kwargs)
+
         if exc_info is not None:
-            error_details = self._format_exception_details(message, exc_info)
-            self._bind_logger().critical(error_details, **kwargs)
+            bound_logger.opt(exception=exc_info).critical(message)
         else:
-            self._bind_logger().critical(message, **kwargs)
+            bound_logger.critical(message)
 
-    @staticmethod
-    def _format_exception_details(message: str, exc_info: Exception) -> str:
-        """
-        Format exception details for logging.
-        """
-        exc_type = exc_info.__class__.__name__
-        exc_message = str(exc_info)
-
-        # Get formatted traceback
-        tb_lines = traceback.format_exception(
-            type(exc_info), exc_info, exc_info.__traceback__
-        )
-        stack_trace = "".join(tb_lines).strip()
-
-        return f"Error: {message}\nException: {exc_type}: {exc_message}\nTraceback:\n{stack_trace}"
-
-
-# Create default instance (optional)
-log = Logger()
-
-# Alternatively, you can create instances as needed:
-# log = Logger(log_dir="my_logs", app_name="myapp", max_retention_days=7)
+    def exception(self, message: str, **kwargs: Any) -> None:
+        """Log an exception with traceback."""
+        self._bind_logger(**kwargs).exception(message)

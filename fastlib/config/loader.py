@@ -74,6 +74,8 @@ class ConfigLoader:
 
         if os.path.exists(env_config_path):
             env_config = self.load_yaml_file(env_config_path)
-            self.config = config_util.deep_merge_dict(self.config, env_config)
+            self.config = config_util.deep_merge_dict(
+                base_dict=self.config, override_dict=env_config
+            )
 
         return self.config

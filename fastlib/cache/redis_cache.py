@@ -5,17 +5,18 @@ import asyncio
 import time
 import uuid
 from contextlib import asynccontextmanager
-from typing import Any, Optional, list
+from typing import Any, Optional
 
 from loguru import logger
 
-from fastlib.cache.base_cache import Cache, CacheError
+from fastlib import ConfigManager
+from fastlib.cache.base import Cache, CacheError
 
 try:
     import redis.asyncio as redis
     from redis.exceptions import RedisError
 except ModuleNotFoundError:
-    logger.error(
+    logger.warning(
         "Cannot find redis module, please install it via `uv add redis[hiredis] and then uv remove diskcache`"
     )
     redis = None
@@ -24,8 +25,6 @@ except Exception:
     logger.error("Error importing redis module")
     redis = None
     RedisError = Exception
-
-from fastlib.config.manager import load_config
 
 
 class RedisCache(Cache):
@@ -347,9 +346,9 @@ class RedisManager:
         if cls._instance is None:
             async with cls._lock:
                 if cls._connection_pool is None:
-                    database = load_config().database
+                    database_config = ConfigManager.get_database_config()
                     cls._connection_pool = redis.ConnectionPool.from_url(
-                        f"redis://:{database.cache_pass}@{database.cache_host}:{database.cache_port}/{database.db_num}",
+                        f"redis://:{database_config.cache_pass}@{database_config.cache_host}:{database_config.cache_port}/{database_config.db_num}",
                         decode_responses=True,
                     )
                 if cls._instance is None:

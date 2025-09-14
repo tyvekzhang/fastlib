@@ -64,3 +64,12 @@ class LogConfig(BaseConfig):
     def error_log_file_pattern(self) -> str:
         """Returns the error log file pattern with timestamp."""
         return f"{{time:{self.time_format}}}_error_{self.app_name}.log"
+
+    def __str__(self) -> str:
+        """
+        Returns a string representation of the database configuration.
+
+        Returns:
+            A string representation of the DatabaseConfig instance.
+        """
+        return f"{self.__class__.__name__}({self.__dict__})"

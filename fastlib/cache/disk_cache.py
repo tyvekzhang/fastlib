@@ -5,11 +5,11 @@ import json
 import threading
 import time
 from contextlib import asynccontextmanager
-from typing import Any, Optional, list
+from typing import Any, Optional
 
 import diskcache
 
-from fastlib.cache.base_cache import Cache, CacheError
+from fastlib.cache.base import Cache, CacheError
 
 
 class PageCache(Cache):

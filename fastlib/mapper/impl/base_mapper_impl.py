@@ -11,7 +11,7 @@ from sqlmodel.ext.asyncio.session import AsyncSession
 from fastlib.constant import FilterOperators, constant
 from fastlib.enums import SortEnum
 from fastlib.mapper.base_mapper import BaseMapper
-from fastlib.middleware.db_session_middleware import db
+from fastlib.middleware.db_session import db
 from fastlib.schema import SortItem
 
 IDType = TypeVar("IDType", int, str)

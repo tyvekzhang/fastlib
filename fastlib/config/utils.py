@@ -1,5 +1,4 @@
 # SPDX-License-Identifier: MIT
-
 """Configuration module util"""
 
 import configparser
@@ -60,7 +59,6 @@ class ProjectInfo:
             path = Path(file_util.find_project_root()) / "pyproject.toml"
         else:
             path = Path(pyproject_path)
-        print(f"{path}")
         if not path.exists():
             raise FileNotFoundError(f"{pyproject_path} does not exist")
 

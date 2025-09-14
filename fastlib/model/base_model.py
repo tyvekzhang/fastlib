@@ -47,12 +47,12 @@ class ModelExt(_SQLModel):
     Create time and update time for a model, can be automatically generated
     """
 
-    create_time: Optional[datetime] = Field(
+    create_at: Optional[datetime] = Field(
         sa_type=DateTime,
         default_factory=datetime.utcnow,
         sa_column_kwargs={"comment": "创建时间"},
     )
-    update_time: Optional[datetime] = Field(
+    update_at: Optional[datetime] = Field(
         sa_type=DateTime,
         default_factory=datetime.utcnow,
         sa_column_kwargs={

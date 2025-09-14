@@ -6,12 +6,12 @@ import http
 from fastapi import Request
 from jwt.exceptions import PyJWTError
 from loguru import logger
-from src.main.app.enums.auth_error_code import AuthErrorCode
 from starlette.responses import JSONResponse
 
 from fastlib import ConfigManager, constant, security
 from fastlib.context.contextvars import current_user_id
 from fastlib.enums.enum import MediaTypeEnum
+from fastlib.enums import AuthErrorCode
 from fastlib.schema import UserCredential
 
 # Load configuration

@@ -2,6 +2,7 @@
 """JWT middleware for FastAPI authentication"""
 
 import http
+from enum import Enum
 
 from fastapi import Request
 from jwt.exceptions import PyJWTError
@@ -11,12 +12,37 @@ from starlette.responses import JSONResponse
 from fastlib import ConfigManager, constant, security
 from fastlib.context.contextvars import current_user_id
 from fastlib.enums.enum import MediaTypeEnum
-from fastlib.enums import AuthErrorCode
 from fastlib.schema import UserCredential
 
 # Load configuration
 server_config = ConfigManager.get_server_config()
 security_config = ConfigManager.get_security_config()
+
+
+class JWTErrorCode(Enum):
+    """Authentication error codes with code and message"""
+
+    OPENAPI_FORBIDDEN = (403, "OpenAPI documentation is disabled")
+    TOKEN_EXPIRED = (401, "Authorization token has expired")
+    MISSING_TOKEN = (401, "Authorization token is missing")
+
+    def __init__(self, code: int, message: str):
+        self._code = code
+        self._message = message
+
+    @property
+    def code(self) -> int:
+        """Get error code"""
+        return self._code
+
+    @property
+    def message(self) -> str:
+        """Get error message"""
+        return self._message
+
+    def to_dict(self) -> dict:
+        """Convert to dictionary format for JSON response"""
+        return {"code": self.code, "message": self.message}
 
 
 async def jwt_middleware(request: Request, call_next):
@@ -32,8 +58,8 @@ async def jwt_middleware(request: Request, call_next):
                 return JSONResponse(
                     status_code=http.HTTPStatus.FORBIDDEN,
                     content={
-                        "code": AuthErrorCode.OPENAPI_FORBIDDEN.code,
-                        "message": AuthErrorCode.OPENAPI_FORBIDDEN.message,
+                        "code": JWTErrorCode.OPENAPI_FORBIDDEN.code,
+                        "message": JWTErrorCode.OPENAPI_FORBIDDEN.message,
                     },
                 )
 
@@ -63,16 +89,16 @@ async def jwt_middleware(request: Request, call_next):
                 return JSONResponse(
                     status_code=http.HTTPStatus.UNAUTHORIZED,
                     content={
-                        "code": AuthErrorCode.TOKEN_EXPIRED.code,
-                        "message": AuthErrorCode.TOKEN_EXPIRED.message,
+                        "code": JWTErrorCode.TOKEN_EXPIRED.code,
+                        "message": JWTErrorCode.TOKEN_EXPIRED.message,
                     },
                 )
         else:
             return JSONResponse(
                 status_code=http.HTTPStatus.UNAUTHORIZED,
                 content={
-                    "code": AuthErrorCode.MISSING_TOKEN.code,
-                    "message": AuthErrorCode.MISSING_TOKEN.message,
+                    "code": JWTErrorCode.MISSING_TOKEN.code,
+                    "message": JWTErrorCode.MISSING_TOKEN.message,
                 },
             )
 

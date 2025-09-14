@@ -1,32 +1,33 @@
+# SPDX-License-Identifier: MIT
+"""Load i18n data and export get message method"""
+
 import json
 from pathlib import Path
-from typing import List, Optional, Union
-from fastlib.constant.constant import RESOURCE_DIR
+from typing import Optional, Union
+
+from fastlib.constant import RESOURCE_DIR
 from fastlib.i18n.types import Language
 
-# Default i18n directory (assumed to be in the same directory as this file)
-DEFAULT_BASE_DIR = Path(RESOURCE_DIR) / "i18n"
+from .manager import get_language
 
-# Global cache for translation data
+DEFAULT_BASE_DIR = Path(RESOURCE_DIR) / "i18n"
 TRANSLATIONS = {
     "zh": {"debug": {"test_message": "这是一条调试测试消息"}},
     "en": {"debug": {"test_message": "This is a debug test message"}},
 }
 
 
-def load_translations(base_dirs: Union[Path, List[Path], None] = None):
-    """Load multilingual translation files from multiple directories.
+def load_translations(base_dirs: Union[Path, list[Path], None] = None):
+    """Load translation files from specified directories.
 
     Args:
-        base_dirs: Single directory path or list of directory paths for translation files.
-                   If not provided, uses the default DEFAULT_BASE_DIR.
+        base_dirs: Path or list of paths to translation directories.
 
-    File structure requirements:
-        Each directory should follow: base_dir/{lang}/{namespace}.json
-        Example: i18n/zh/error.json
+    File structure:
+        base_dir/{lang}/{namespace}.json
+        Example: i18n/en/error.json
 
-    Note: Later directories will override translations from earlier directories
-          if the same language and namespace exist.
+    Note: Later directories override earlier ones for duplicate keys.
     """
     if base_dirs is None:
         base_dirs = [DEFAULT_BASE_DIR]
@@ -50,7 +51,7 @@ def load_translations(base_dirs: Union[Path, List[Path], None] = None):
                 namespace = (
                     file.stem
                 )  # Determine message_type from filename, e.g., error, success
-                with open(file, "r", encoding="utf-8") as f:
+                with open(file, encoding="utf-8") as f:
                     translations_data = json.load(f)
 
                     # Merge with existing namespace data or create new
@@ -60,7 +61,9 @@ def load_translations(base_dirs: Union[Path, List[Path], None] = None):
                         TRANSLATIONS[lang.value][namespace] = translations_data
 
 
-def get_message(message_type: str, key: str, language: Language) -> str:
+def get_message(
+    message_type: str, key: str, language: Optional[Language] = None
+) -> str:
     """Get translated message for given type, key and language.
 
     Args:
@@ -71,15 +74,17 @@ def get_message(message_type: str, key: str, language: Language) -> str:
     Returns:
         Translated message or fallback to default language if not found
     """
-    default_language = Language.CHINESE.value
 
+    if not language:
+        language = get_language()
     # Try to get message from requested language
     lang_dict = TRANSLATIONS.get(language.value, {})
     msg = lang_dict.get(message_type, {}).get(key)
-
+    print(f"lang_dict: {lang_dict}")
     if msg:
         return msg
 
+    default_language = Language.ENGLISH.value
     # Fallback to default language
     return (
         TRANSLATIONS.get(default_language, {})

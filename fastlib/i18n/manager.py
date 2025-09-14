@@ -1,10 +1,13 @@
+# SPDX-License-Identifier: MIT
 """
 Internationalization context manager
 """
 
 import contextvars
 import functools
-from typing import Any, Callable, TypeVar, Awaitable
+from collections.abc import Awaitable
+from typing import Any, Callable, TypeVar
+
 from fastlib.i18n.types import Language
 
 _language_context = contextvars.ContextVar("language", default=Language.ENGLISH)

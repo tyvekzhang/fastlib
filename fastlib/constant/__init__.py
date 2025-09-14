@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: MIT
 """Constant for the application"""
 
 from .constant import (

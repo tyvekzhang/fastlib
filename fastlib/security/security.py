@@ -1,6 +1,5 @@
 # SPDX-License-Identifier: MIT
 from datetime import datetime, timedelta
-from functools import wraps
 from typing import Any, Callable, Optional, Union
 
 import jwt
@@ -13,8 +12,8 @@ from fastlib.config.manager import ConfigManager
 from fastlib.schema import CurrentUser
 
 # Configuration
-security_config = ConfigManager.get_security_config
-server_config = ConfigManager.get_server_config
+security_config = ConfigManager.get_security_config()
+server_config = ConfigManager.get_server_config()
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
@@ -177,24 +176,3 @@ def get_user_id(token: str) -> int:
     """
     payload = decode_jwt_token(token)
     return int(payload["sub"])
-
-
-def role_required(required_role: str):
-    def decorator(func):
-        @wraps(func)
-        async def wrapper(current_user: CurrentUser, *args, **kwargs):
-            # Get the current user
-            pass
-            # user_id = current_user.user_id
-            #
-            # # Get user role info or permission info
-            # if user.get("role") != required_role:
-            #     raise HTTPException(
-            #         status_code=status.HTTP_403_FORBIDDEN,
-            #         detail=f"Requires {required_role} role"
-            #     )
-            # return await func(request, *args, **kwargs)
-
-        return wrapper
-
-    return decorator

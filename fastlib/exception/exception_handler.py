@@ -16,7 +16,6 @@ from pydantic_core._pydantic_core import ValidationError  # noqa
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from fastlib import ConfigManager
-from fastlib.enums.enum import CommonErrorCode
 from fastlib.exception import HTTPException
 
 
@@ -69,9 +68,9 @@ def collect_request_info(request: Request) -> dict[str, Any]:
         "method": request.method,
         "query_params": dict(request.query_params),
         "headers": dict(request.headers),
-        "client": f"{request.client.host}:{request.client.port}"
-        if request.client
-        else None,
+        "client": (
+            f"{request.client.host}:{request.client.port}" if request.client else None
+        ),
     }
 
 
@@ -80,13 +79,15 @@ def log_exception(exc: Exception, request_info: dict[str, Any]) -> None:
     Log exception with full context information.
     """
     logger.error(
-        textwrap.dedent(f"""\
+        textwrap.dedent(
+            f"""\
     Unhandled exception,
     exception_type: {type(exc).__name__},
     exception_message: {str(exc)},
     traceback: {traceback.format_exc()},
     request: {request_info},
-    """)
+    """
+        )
     )
 
 
@@ -109,7 +110,7 @@ def build_error_response(
     return JSONResponse(
         content={
             "error": {
-                "code": CommonErrorCode.INTERNAL_SERVER_ERROR.code,
+                "code": -1,
                 "message": error_message,
             }
         }

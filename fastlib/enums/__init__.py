@@ -1,7 +1,7 @@
 """Enum for the application"""
 
+from .base import DBTypeEnum, MediaTypeEnum, SortEnum
 from .base_error_code import ExceptionCode
-from .enum import DBTypeEnum, MediaTypeEnum, SortEnum
 
 __all__ = [
     ExceptionCode,

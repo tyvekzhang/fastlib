@@ -5,7 +5,7 @@ from typing import Any, Generic, Optional, TypeVar, Union
 
 from pydantic import BaseModel, model_serializer
 
-from fastlib.enums import ExceptionCode
+from fastlib.exception.base import ErrorDetail
 
 # Define generic type variables for response data
 DataType = TypeVar("DataType")
@@ -77,7 +77,7 @@ class HttpResponse(BaseModel, Generic[T]):
 
     @staticmethod
     def fail_with_error(
-        error: Union[ExceptionCode, tuple[int, str]],  # Supports multiple error types
+        error: Union[ErrorDetail, tuple[int, str]],  # Supports multiple error types
         extra_msg: Optional[str] = None,
     ) -> "HttpResponse[Any]":
         """Constructs an error response from various error type inputs.

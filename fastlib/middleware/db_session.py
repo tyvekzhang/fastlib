@@ -45,7 +45,7 @@ def create_middleware_and_session_proxy():
             session_args = session_args or {}
 
             if not custom_engine and not db_url:
-                raise ValueError(
+                raise RuntimeError(
                     "You need to pass a db_url or a custom_engine parameter."
                 )
             if not custom_engine:
@@ -73,11 +73,11 @@ def create_middleware_and_session_proxy():
         def session(self) -> AsyncSession:
             """Get the current async context session."""
             if _Session is None:
-                raise ValueError("Session is not initialised")
+                raise RuntimeError("Session is not initialised")
 
             session = _session.get()
             if session is None:
-                raise ValueError("Session is not initialised")
+                raise RuntimeError("Session is not initialised")
 
             return session
 
@@ -93,7 +93,7 @@ def create_middleware_and_session_proxy():
         async def __aenter__(self):
             """Enter session context."""
             if _Session is None:
-                raise ValueError("Session is not initialised")
+                raise RuntimeError("Session is not initialised")
 
             self.token = _session.set(_Session(**self.session_args))  # type: ignore
             return type(self)

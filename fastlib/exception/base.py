@@ -3,7 +3,15 @@
 
 from typing import Any, Optional
 
-from fastlib.enums import ExceptionCode
+from pydantic import BaseModel
+
+
+class ErrorDetail(BaseModel):
+    """Base class for error code.
+    """
+
+    code: int
+    message: str
 
 
 class HTTPException(Exception):
@@ -18,7 +26,7 @@ class HTTPException(Exception):
 
     def __init__(
         self,
-        code: ExceptionCode,
+        code: ErrorDetail,
         message: Optional[str] = None,
         details: Optional[Any] = None,
     ):

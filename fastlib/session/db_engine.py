@@ -7,10 +7,6 @@ from sqlalchemy.ext.asyncio import AsyncEngine, create_async_engine
 
 from fastlib import ConfigManager
 
-# Global engine cache with thread safety
-_engine_map: dict[str, AsyncEngine] = {}
-_lock = Lock()
-
 async_engine: AsyncEngine
 
 

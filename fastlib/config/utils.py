@@ -8,7 +8,7 @@ from urllib.parse import urlparse
 
 from loguru import logger
 
-from fastlib.enums.base import DBTypeEnum
+from fastlib.enums import DBTypeEnum
 from fastlib.utils import file_util
 
 try:

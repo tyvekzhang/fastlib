@@ -1,8 +1,6 @@
 # SPDX-License-Identifier: MIT
 """Thread-safe async SQLAlchemy engine management."""
 
-from threading import Lock
-
 from sqlalchemy.ext.asyncio import AsyncEngine, create_async_engine
 
 from fastlib import ConfigManager

@@ -10,8 +10,8 @@ from loguru import logger
 from starlette.responses import JSONResponse
 
 from fastlib import ConfigManager, constant, security
-from fastlib.context.contextvars import current_user_id
-from fastlib.enums.base import MediaTypeEnum
+from fastlib.contextvars import current_user_id
+from fastlib.enums import MediaTypeEnum
 from fastlib.schema import UserCredential
 
 # Load configuration

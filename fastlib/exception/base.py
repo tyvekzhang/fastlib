@@ -7,8 +7,7 @@ from pydantic import BaseModel
 
 
 class ErrorDetail(BaseModel):
-    """Base class for error code.
-    """
+    """Base class for error code."""
 
     code: int
     message: str

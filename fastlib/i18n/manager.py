@@ -56,11 +56,6 @@ class I18nContext:
             _language_context.reset(self._token)
 
 
-def with_language(language: Language) -> I18nContext:
-    """Helper to create context manager"""
-    return I18nContext(language)
-
-
 def _language_context_decorator(
     language: Language, is_async: bool = False
 ) -> Callable[[F], F]:
@@ -97,3 +92,8 @@ def async_language_context(
 ) -> Callable[[Callable[..., Awaitable[Any]]], Callable[..., Awaitable[Any]]]:
     """Decorator: run an async function within a language context"""
     return _language_context_decorator(language, is_async=True)
+
+
+def i18n_context(language: Language) -> I18nContext:
+    """Helper to create context manager"""
+    return I18nContext(language)

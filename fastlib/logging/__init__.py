@@ -1,4 +1,7 @@
-"""Logging module"""
+# SPDX-License-Identifier: MIT
+"""
+Logging module
+"""
 
 from .config import LogConfig
 from .handlers import Logger

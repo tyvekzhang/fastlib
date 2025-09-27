@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: MIT
 """Common schema with data validation."""
 
-from typing import Generic, Optional, TypeVar
+from typing import Generic, Literal, Optional, TypeVar
 
 from pydantic import BaseModel, Field
 
@@ -53,18 +53,18 @@ class SortItem(BaseModel):
     """
 
     field: str
-    order: str
+    order: Literal["asc", "desc"]
 
 
-class PaginationRequest(BaseModel):
+class ListRequest(BaseModel):
     """
-    Pagination parameters for API endpoints.
+    Pagination and sorting parameters for list endpoints.
 
     Attributes:
-
-        current: Current page number (1-based).
-        page_size: Number of items per page.
-        count: Flag to request total count of items.
+        current: Current page number (1-based). Default: 1.
+        page_size: Items per page (1-1000). Default: 10.
+        count: Whether to return total count. Default: True.
+        sort_str: Optional sorting string (e.g., "field:asc,field2:desc").
     """
 
     current: int = Field(default=1, gt=0, description="Current page number (1-based)")
@@ -74,9 +74,8 @@ class PaginationRequest(BaseModel):
         le=1000,
         description="Number of items per page (1-1000)",
     )
-    count: bool = Field(
-        default=True, description="Flag to request total count of items"
-    )
+    count: bool = Field(default=True, description="Whether to return total count")
     sort_str: Optional[str] = Field(
-        default=None, description="Optional sorting string, eg:"
+        default=None,
+        description='Optional sorting string (e.g., "field:asc,field2:desc")',
     )

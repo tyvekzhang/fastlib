@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: MIT
 """Standardized HTTP response model for API implementations."""
 
-from typing import Any, Generic, Optional, TypeVar, Union
+from typing import Any, Generic, Optional, TypeVar, Union, overload
 
 from pydantic import BaseModel, model_serializer
 
@@ -57,6 +57,7 @@ class HttpResponse(BaseModel, Generic[T]):
         return HttpResponse[T](code=code, message=message, data=data)
 
     @staticmethod
+    @overload
     def fail(
         message: str = str,
         code: int = DEFAULT_FAIL_CODE,
@@ -76,7 +77,8 @@ class HttpResponse(BaseModel, Generic[T]):
         return HttpResponse[Any](code=code, message=message, data=data)
 
     @staticmethod
-    def fail_with_error(
+    @overload
+    def fail(
         error: Union[ErrorDetail, tuple[int, str]],  # Supports multiple error types
         extra_msg: Optional[str] = None,
     ) -> "HttpResponse[Any]":

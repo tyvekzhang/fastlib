@@ -1,23 +1,9 @@
 # SPDX-License-Identifier: MIT
 """Common schema with data validation."""
 
-from typing import Generic, Literal, Optional, TypeVar
+from typing import Literal
 
-from pydantic import BaseModel, Field
-
-T = TypeVar("T")
-
-
-class ListResult(BaseModel, Generic[T]):
-    """Paginated query result container.
-
-    Attributes:
-        records: List of items in current page
-        total: Total number of items across all pages
-    """
-
-    records: list[T] = Field(default_factory=list)
-    total: int = 0
+from pydantic import BaseModel
 
 
 class UserCredential(BaseModel):
@@ -54,28 +40,3 @@ class SortItem(BaseModel):
 
     field: str
     order: Literal["asc", "desc"]
-
-
-class ListRequest(BaseModel):
-    """
-    Pagination and sorting parameters for list endpoints.
-
-    Attributes:
-        current: Current page number (1-based). Default: 1.
-        page_size: Items per page (1-1000). Default: 10.
-        count: Whether to return total count. Default: True.
-        sort_str: Optional sorting string (e.g., "field:asc,field2:desc").
-    """
-
-    current: int = Field(default=1, gt=0, description="Current page number (1-based)")
-    page_size: int = Field(
-        default=10,
-        ge=1,
-        le=1000,
-        description="Number of items per page (1-1000)",
-    )
-    count: bool = Field(default=True, description="Whether to return total count")
-    sort_str: Optional[str] = Field(
-        default=None,
-        description='Optional sorting string (e.g., "field:asc,field2:desc")',
-    )

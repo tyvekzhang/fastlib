@@ -2,7 +2,7 @@
 """Sqlmodel impl that handle database operation"""
 
 from collections.abc import Sequence
-from typing import Any, Generic, Optional, TypeVar
+from typing import Any, Generic, Optional, TypeVar, Union
 
 from pydantic import BaseModel
 from sqlmodel import SQLModel, and_, delete, func, insert, select, update
@@ -57,56 +57,100 @@ class SqlModelMapper(BaseMapper, Generic[ModelType]):
         return exec_response.rowcount
 
     async def select_by_id(
-        self, *, id: IDType, db_session: Optional[AsyncSession] = None
-    ) -> Optional[ModelType]:
-        """
-        Select a single record by its ID.
-        """
-        db_session = db_session or self.db.session
-        statement = select(self.model).where(self.model.id == id)
-        db_response = await db_session.exec(statement)
-        return db_response.one_or_none()
-
-    async def select_by_ids(
-        self, *, ids: list[IDType], db_session: Optional[AsyncSession] = None
-    ) -> list[ModelType]:
-        """
-        Select record list by their IDs.
-        """
-        db_session = db_session or self.db.session
-        statement = select(self.model).where(self.model.id.in_(ids))
-        db_response = await db_session.exec(statement)
-        return db_response.all()
-
-    async def select_by_page(
         self,
         *,
-        current: int = 1,
-        page_size: int = 100,
-        count: bool = True,
+        id: IDType,
+        fields: Optional[list[str]] = None,
+        schema: Optional[type[SchemaType]] = None,
         db_session: Optional[AsyncSession] = None,
-        **kwargs,
-    ) -> tuple[list[ModelType], int]:
+    ) -> Optional[Union[ModelType, SchemaType]]:
         """
-        Select a list of record, with optional filtering, pagination, and ordering.
+        Select a single record by its ID.
 
         Parameters:
-            current : The current page number to select (1-indexed)
-            page_size : The number of data_list per page
-            count : Whether to data the total row
-            db_session : The database session to use
-            **kwargs: Additional filter criteria, including:
-                - EQ: Equal to (e.g., {"column_name": value})
-                - NE: Not equal to (e.g., {"column_name": value})
-                - GT: Greater than (e.g., {"column_name": value})
-                - GE: Greater than or equal to (e.g., {"column_name": value})
-                - LT: Less than (e.g., {"column_name": value})
-                - LE: Less than or equal to (e.g., {"column_name": value})
-                - BETWEEN: Between two values (e.g., {"column_name": (start, end)})
-                - LIKE: Fuzzy search (e.g., {"column_name": "%value%"})
+            id: Record ID
+            fields: List of field names to select (None for all fields)
+            schema: Pydantic schema to convert the result to
+            db_session: Database session
         """
         db_session = db_session or self.db.session
-        query = select(self.model)
+
+        # Build select statement with specified fields
+        if fields:
+            selected_fields = [getattr(self.model, field) for field in fields]
+            statement = select(*selected_fields).where(self.model.id == id)
+        else:
+            statement = select(self.model).where(self.model.id == id)
+
+        db_response = await db_session.exec(statement)
+        result = db_response.one_or_none()
+
+        # Convert to schema if specified
+        if result and schema:
+            if fields:
+                # Convert tuple result to dict for schema conversion
+                result_dict = dict(zip(fields, result))
+                return schema.model_validate(result_dict)
+            else:
+                return schema.model_validate(result)
+
+        return result
+
+    async def select_by_ids(
+        self,
+        *,
+        ids: list[IDType],
+        fields: Optional[list[str]] = None,
+        schema: Optional[type[SchemaType]] = None,
+        db_session: Optional[AsyncSession] = None,
+    ) -> list[Union[ModelType, SchemaType]]:
+        """
+        Select record list by their IDs.
+
+        Parameters:
+            ids: List of record IDs
+            fields: List of field names to select (None for all fields)
+            schema: Pydantic schema to convert the results to
+            db_session: Database session
+        """
+        db_session = db_session or self.db.session
+
+        # Build select statement with specified fields
+        if fields:
+            selected_fields = [getattr(self.model, field) for field in fields]
+            statement = select(*selected_fields).where(self.model.id.in_(ids))
+        else:
+            statement = select(self.model).where(self.model.id.in_(ids))
+
+        db_response = await db_session.exec(statement)
+        results = db_response.all()
+
+        # Convert to schema if specified
+        if schema:
+            converted_results = []
+            for result in results:
+                if fields:
+                    # Convert tuple result to dict for schema conversion
+                    result_dict = dict(zip(fields, result))
+                    converted_results.append(schema.model_validate(result_dict))
+                else:
+                    converted_results.append(schema.model_validate(result))
+            return converted_results
+
+        return results
+
+    async def _build_query_with_fields(
+        self, fields: Optional[list[str]] = None, **kwargs
+    ) -> Any:
+        """
+        Build base query with field selection and filters.
+        """
+        # Build select statement with specified fields
+        if fields:
+            selected_fields = [getattr(self.model, field) for field in fields]
+            query = select(*selected_fields)
+        else:
+            query = select(self.model)
 
         # Apply filters
         if FilterOperators.EQ in kwargs:
@@ -134,6 +178,58 @@ class SqlModelMapper(BaseMapper, Generic[ModelType]):
             for column, value in kwargs[FilterOperators.LIKE].items():
                 safe_value = f"{str(value)}%"
                 query = query.filter(getattr(self.model, column).like(safe_value))
+
+        return query
+
+    async def _convert_results(
+        self,
+        results: list,
+        fields: Optional[list[str]] = None,
+        schema: Optional[type[SchemaType]] = None,
+    ) -> list[Union[ModelType, SchemaType]]:
+        """
+        Convert query results to specified schema.
+        """
+        if not schema:
+            return results
+
+        converted_results = []
+        for result in results:
+            if fields:
+                # Convert tuple result to dict for schema conversion
+                result_dict = dict(zip(fields, result))
+                converted_results.append(schema.model_validate(result_dict))
+            else:
+                converted_results.append(schema.model_validate(result))
+        return converted_results
+
+    async def select_by_page(
+        self,
+        *,
+        current: int = 1,
+        page_size: int = 100,
+        count: bool = True,
+        fields: Optional[list[str]] = None,
+        schema: Optional[type[SchemaType]] = None,
+        db_session: Optional[AsyncSession] = None,
+        **kwargs,
+    ) -> tuple[list[Union[ModelType, SchemaType]], int]:
+        """
+        Select a list of record, with optional filtering, pagination, and ordering.
+
+        Parameters:
+            current : The current page number to select (1-indexed)
+            page_size : The number of data_list per page
+            count : Whether to data the total row
+            fields: List of field names to select (None for all fields)
+            schema: Pydantic schema to convert the results to
+            db_session : The database session to use
+            **kwargs: Additional filter criteria
+        """
+        db_session = db_session or self.db.session
+
+        # Build base query
+        query = await self._build_query_with_fields(fields, **kwargs)
 
         # Get total count if requested
         total_count = 0
@@ -146,9 +242,12 @@ class SqlModelMapper(BaseMapper, Generic[ModelType]):
         query = query.offset((current - 1) * page_size).limit(page_size)
 
         exec_response = await db_session.exec(query)
-        record_list: list[ModelType] = exec_response.all()
+        record_list = exec_response.all()
 
-        return record_list, total_count
+        # Convert results if schema is specified
+        converted_list = await self._convert_results(record_list, fields, schema)
+
+        return converted_list, total_count
 
     async def select_by_ordered_page(
         self,
@@ -157,9 +256,11 @@ class SqlModelMapper(BaseMapper, Generic[ModelType]):
         page_size: int = 100,
         count: bool = True,
         sort_list: list[SortItem] = None,
+        fields: Optional[list[str]] = None,
+        schema: Optional[type[SchemaType]] = None,
         db_session: Optional[AsyncSession] = None,
         **kwargs,
-    ) -> tuple[list[ModelType], int]:
+    ) -> tuple[list[Union[ModelType, SchemaType]], int]:
         """
         Select a list of data_list, with optional filtering, pagination, and ordering.
 
@@ -168,46 +269,15 @@ class SqlModelMapper(BaseMapper, Generic[ModelType]):
             page_size : The number of data_list per page
             count : Whether to data the total row
             sort_list: List of SortItems for multi-column ordering (default: primary key desc)
+            fields: List of field names to select (None for all fields)
+            schema: Pydantic schema to convert the results to
             db_session : The database session to use
-            **kwargs: Additional filter criteria, including:
-                - EQ: Equal to (e.g., {"column_name": value})
-                - NE: Not equal to (e.g., {"column_name": value})
-                - GT: Greater than (e.g., {"column_name": value})
-                - GE: Greater than or equal to (e.g., {"column_name": value})
-                - LT: Less than (e.g., {"column_name": value})
-                - LE: Less than or equal to (e.g., {"column_name": value})
-                - BETWEEN: Between two values (e.g., {"column_name": (start, end)})
-                - LIKE: Fuzzy search (e.g., {"column_name": "%value%"})
+            **kwargs: Additional filter criteria
         """
         db_session = db_session or self.db.session
-        query = select(self.model)
 
-        # Apply filters
-        if FilterOperators.EQ in kwargs:
-            for column, value in kwargs[FilterOperators.EQ].items():
-                query = query.filter(getattr(self.model, column) == value)
-        if FilterOperators.NE in kwargs:
-            for column, value in kwargs[FilterOperators.NE].items():
-                query = query.filter(getattr(self.model, column) != value)
-        if FilterOperators.GT in kwargs:
-            for column, value in kwargs[FilterOperators.GT].items():
-                query = query.filter(getattr(self.model, column) > value)
-        if FilterOperators.GE in kwargs:
-            for column, value in kwargs[FilterOperators.GE].items():
-                query = query.filter(getattr(self.model, column) >= value)
-        if FilterOperators.LT in kwargs:
-            for column, value in kwargs[FilterOperators.LT].items():
-                query = query.filter(getattr(self.model, column) < value)
-        if FilterOperators.LE in kwargs:
-            for column, value in kwargs[FilterOperators.LE].items():
-                query = query.filter(getattr(self.model, column) <= value)
-        if FilterOperators.BETWEEN in kwargs:
-            for column, (start, end) in kwargs[FilterOperators.BETWEEN].items():
-                query = query.filter(getattr(self.model, column).between(start, end))
-        if FilterOperators.LIKE in kwargs:
-            for column, value in kwargs[FilterOperators.LIKE].items():
-                safe_value = f"{str(value)}%"
-                query = query.filter(getattr(self.model, column).like(safe_value))
+        # Build base query
+        query = await self._build_query_with_fields(fields, **kwargs)
 
         # Get total count if requested
         total_count = 0
@@ -233,9 +303,12 @@ class SqlModelMapper(BaseMapper, Generic[ModelType]):
         query = query.offset((current - 1) * page_size).limit(page_size)
 
         exec_response = await db_session.exec(query)
-        data_list: list[ModelType] = exec_response.all()
+        data_list = exec_response.all()
 
-        return data_list, total_count
+        # Convert results if schema is specified
+        converted_list = await self._convert_results(data_list, fields, schema)
+
+        return converted_list, total_count
 
     async def select_by_parent_id(
         self,
@@ -244,9 +317,11 @@ class SqlModelMapper(BaseMapper, Generic[ModelType]):
         page_size: int = constant.MAX_PAGE_SIZE,
         count: bool = True,
         sort_list: list[SortItem] = None,
+        fields: Optional[list[str]] = None,
+        schema: Optional[type[SchemaType]] = None,
         db_session: Optional[AsyncSession] = None,
         **kwargs,
-    ) -> tuple[list[ModelType], int]:
+    ) -> tuple[list[Union[ModelType, SchemaType]], int]:
         """
         Select record list with pagination and sorting by parent ID.
 
@@ -255,52 +330,23 @@ class SqlModelMapper(BaseMapper, Generic[ModelType]):
             page_size : The number of data_list per page
             count : Whether to data the total row
             sort_list: List of SortItems for multi-column ordering (default: primary key desc)
+            fields: List of field names to select (None for all fields)
+            schema: Pydantic schema to convert the results to
             db_session : The database session to use
-            **kwargs: Additional filter criteria, including:
-                - EQ: Equal to (e.g., {"column_name": value})
-                - NE: Not equal to (e.g., {"column_name": value})
-                - GT: Greater than (e.g., {"column_name": value})
-                - GE: Greater than or equal to (e.g., {"column_name": value})
-                - LT: Less than (e.g., {"column_name": value})
-                - LE: Less than or equal to (e.g., {"column_name": value})
-                - BETWEEN: Between two values (e.g., {"column_name": (start, end)})
-                - LIKE: Fuzzy search (e.g., {"column_name": "%value%"})
+            **kwargs: Additional filter criteria
         """
         db_session = db_session or self.db.session
-        query = select(self.model)
 
-        # Apply filters
+        # Build base query
+        query = await self._build_query_with_fields(fields, **kwargs)
+
+        # Apply parent ID filter
         if hasattr(self.model, constant.PARENT_ID) and (
             constant.PARENT_ID not in kwargs or kwargs[constant.PARENT_ID] is None
         ):
             query = query.filter(
                 getattr(self.model, constant.PARENT_ID) == constant.ROOT_PARENT_ID
             )
-        if FilterOperators.EQ in kwargs:
-            for column, value in kwargs[FilterOperators.EQ].items():
-                query = query.filter(getattr(self.model, column) == value)
-        if FilterOperators.NE in kwargs:
-            for column, value in kwargs[FilterOperators.NE].items():
-                query = query.filter(getattr(self.model, column) != value)
-        if FilterOperators.GT in kwargs:
-            for column, value in kwargs[FilterOperators.GT].items():
-                query = query.filter(getattr(self.model, column) > value)
-        if FilterOperators.GE in kwargs:
-            for column, value in kwargs[FilterOperators.GE].items():
-                query = query.filter(getattr(self.model, column) >= value)
-        if FilterOperators.LT in kwargs:
-            for column, value in kwargs[FilterOperators.LT].items():
-                query = query.filter(getattr(self.model, column) < value)
-        if FilterOperators.LE in kwargs:
-            for column, value in kwargs[FilterOperators.LE].items():
-                query = query.filter(getattr(self.model, column) <= value)
-        if FilterOperators.BETWEEN in kwargs:
-            for column, (start, end) in kwargs[FilterOperators.BETWEEN].items():
-                query = query.filter(getattr(self.model, column).between(start, end))
-        if FilterOperators.LIKE in kwargs:
-            for column, value in kwargs[FilterOperators.LIKE].items():
-                safe_value = f"{str(value)}%"
-                query = query.filter(getattr(self.model, column).like(safe_value))
 
         # Get total count if requested
         total_count = 0
@@ -328,9 +374,12 @@ class SqlModelMapper(BaseMapper, Generic[ModelType]):
         query = query.offset((current - 1) * page_size).limit(page_size)
 
         exec_response = await db_session.exec(query)
-        data_list: list[ModelType] = exec_response.all()
+        data_list = exec_response.all()
 
-        return data_list, total_count
+        # Convert results if schema is specified
+        converted_list = await self._convert_results(data_list, fields, schema)
+
+        return converted_list, total_count
 
     async def update_by_id(
         self, *, data: ModelType, db_session: Optional[AsyncSession] = None

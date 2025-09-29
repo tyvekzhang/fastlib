@@ -3,7 +3,7 @@
 
 from typing import Any, Generic, Optional, TypeVar, Union, overload
 
-from pydantic import BaseModel, model_serializer
+from pydantic import BaseModel, Field, model_serializer
 
 from fastlib.exception.base import ErrorDetail
 
@@ -15,6 +15,18 @@ T = TypeVar("T")
 DEFAULT_SUCCESS_CODE: int = 0
 DEFAULT_FAIL_CODE: int = -1
 DEFAULT_SUCCESS_MSG: str = "success"
+
+
+class ListResponse(BaseModel, Generic[T]):
+    """Paginated query result container.
+
+    Attributes:
+        records: List of items in current page
+        total: Total number of items across all pages
+    """
+
+    records: list[T] = Field(default_factory=list)
+    total: int = 0
 
 
 class HttpResponse(BaseModel, Generic[T]):

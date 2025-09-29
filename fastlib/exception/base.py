@@ -1,19 +1,20 @@
 # SPDX-License-Identifier: MIT
 """Base exception class for the application."""
 
+from http import HTTPStatus
 from typing import Any, Optional
 
 from pydantic import BaseModel
 
 
 class ErrorDetail(BaseModel):
-    """Base class for error code."""
+    """Error detail."""
 
     code: int
     message: str
 
 
-class HTTPException(Exception):
+class BaseException(Exception):
     """
     Base exception class for all custom exception in the application.
 
@@ -45,3 +46,17 @@ class HTTPException(Exception):
     def __post_init__(self):
         if self.message is None:
             self.message = self.code.message
+
+
+class SystemErrorCode:
+    """System-related error codes."""
+
+    INTERNAL_ERROR = ErrorDetail(
+        code=HTTPStatus.INTERNAL_SERVER_ERROR.value, message="Internal server error"
+    )
+
+
+class SystemException(BaseException):
+    code: SystemErrorCode
+    message: Optional[str] = None
+    details: Optional[Any] = None

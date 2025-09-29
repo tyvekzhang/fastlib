@@ -16,7 +16,7 @@ from pydantic_core._pydantic_core import ValidationError  # noqa
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from fastlib import ConfigManager
-from fastlib.exception import HTTPException
+from fastlib.exception import BaseException
 
 
 async def extract_request_data(request: Request) -> dict[str, Any]:
@@ -163,7 +163,7 @@ def is_auth_errors_code(error_code: int):
     return False
 
 
-async def custom_exception_handler(request: Request, exc: HTTPException):
+async def custom_exception_handler(request: Request, exc: BaseException):
     """
     Handler for custom HTTPException.
     """
@@ -240,7 +240,6 @@ async def custom_http_exception_handler(request: Request, exc: StarletteHTTPExce
     return await http_exception_handler(request, exc)
 
 
-# 修改为：
 async def jwt_exception_handler(request: Request):
     """
     Handler for JWT-related exceptions.

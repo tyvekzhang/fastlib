@@ -8,7 +8,7 @@ from pydantic_core._pydantic_core import ValidationError  # noqa
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from fastlib.exception import exception_handler
-from fastlib.exception.base import HTTPException
+from fastlib.exception.base import BaseException
 
 
 def register_exception_handlers(app: FastAPI) -> None:
@@ -20,7 +20,7 @@ def register_exception_handlers(app: FastAPI) -> None:
         ValidationError, exception_handler.validation_exception_handler
     )
 
-    app.add_exception_handler(HTTPException, exception_handler.custom_exception_handler)
+    app.add_exception_handler(BaseException, exception_handler.custom_exception_handler)
 
     app.add_exception_handler(
         StarletteHTTPException, exception_handler.custom_http_exception_handler

@@ -24,6 +24,24 @@ class SqlModelMapper(BaseMapper, Generic[ModelType]):
         self.model = model
         self.db = db
 
+    def _get_fields_from_schema(self, schema: type[SchemaType]) -> list[str]:
+        """
+        Extract field names from Pydantic schema.
+        """
+        return list(schema.model_fields.keys())
+
+    def _resolve_fields(
+        self, fields: Optional[list[str]], schema: Optional[type[SchemaType]]
+    ) -> Optional[list[str]]:
+        """
+        Resolve fields parameter: if schema is provided but fields is None, use schema fields.
+        """
+        if fields is not None:
+            return fields
+        if schema is not None:
+            return self._get_fields_from_schema(schema)
+        return None
+
     async def insert(
         self,
         *,
@@ -75,9 +93,12 @@ class SqlModelMapper(BaseMapper, Generic[ModelType]):
         """
         db_session = db_session or self.db.session
 
+        # Resolve fields: if schema provided but fields is None, use schema fields
+        resolved_fields = self._resolve_fields(fields, schema)
+
         # Build select statement with specified fields
-        if fields:
-            selected_fields = [getattr(self.model, field) for field in fields]
+        if resolved_fields:
+            selected_fields = [getattr(self.model, field) for field in resolved_fields]
             statement = select(*selected_fields).where(self.model.id == id)
         else:
             statement = select(self.model).where(self.model.id == id)
@@ -87,9 +108,9 @@ class SqlModelMapper(BaseMapper, Generic[ModelType]):
 
         # Convert to schema if specified
         if result and schema:
-            if fields:
+            if resolved_fields:
                 # Convert tuple result to dict for schema conversion
-                result_dict = dict(zip(fields, result))
+                result_dict = dict(zip(resolved_fields, result))
                 return schema.model_validate(result_dict)
             else:
                 return schema.model_validate(result)
@@ -115,9 +136,12 @@ class SqlModelMapper(BaseMapper, Generic[ModelType]):
         """
         db_session = db_session or self.db.session
 
+        # Resolve fields: if schema provided but fields is None, use schema fields
+        resolved_fields = self._resolve_fields(fields, schema)
+
         # Build select statement with specified fields
-        if fields:
-            selected_fields = [getattr(self.model, field) for field in fields]
+        if resolved_fields:
+            selected_fields = [getattr(self.model, field) for field in resolved_fields]
             statement = select(*selected_fields).where(self.model.id.in_(ids))
         else:
             statement = select(self.model).where(self.model.id.in_(ids))
@@ -129,9 +153,9 @@ class SqlModelMapper(BaseMapper, Generic[ModelType]):
         if schema:
             converted_results = []
             for result in results:
-                if fields:
+                if resolved_fields:
                     # Convert tuple result to dict for schema conversion
-                    result_dict = dict(zip(fields, result))
+                    result_dict = dict(zip(resolved_fields, result))
                     converted_results.append(schema.model_validate(result_dict))
                 else:
                     converted_results.append(schema.model_validate(result))
@@ -140,14 +164,20 @@ class SqlModelMapper(BaseMapper, Generic[ModelType]):
         return results
 
     async def _build_query_with_fields(
-        self, fields: Optional[list[str]] = None, **kwargs
+        self,
+        fields: Optional[list[str]] = None,
+        schema: Optional[type[SchemaType]] = None,
+        **kwargs,
     ) -> Any:
         """
         Build base query with field selection and filters.
         """
+        # Resolve fields: if schema provided but fields is None, use schema fields
+        resolved_fields = self._resolve_fields(fields, schema)
+
         # Build select statement with specified fields
-        if fields:
-            selected_fields = [getattr(self.model, field) for field in fields]
+        if resolved_fields:
+            selected_fields = [getattr(self.model, field) for field in resolved_fields]
             query = select(*selected_fields)
         else:
             query = select(self.model)
@@ -179,7 +209,7 @@ class SqlModelMapper(BaseMapper, Generic[ModelType]):
                 safe_value = f"{str(value)}%"
                 query = query.filter(getattr(self.model, column).like(safe_value))
 
-        return query
+        return query, resolved_fields
 
     async def _convert_results(
         self,
@@ -193,11 +223,14 @@ class SqlModelMapper(BaseMapper, Generic[ModelType]):
         if not schema:
             return results
 
+        # Resolve fields for conversion
+        resolved_fields = self._resolve_fields(fields, schema)
+
         converted_results = []
         for result in results:
-            if fields:
+            if resolved_fields:
                 # Convert tuple result to dict for schema conversion
-                result_dict = dict(zip(fields, result))
+                result_dict = dict(zip(resolved_fields, result))
                 converted_results.append(schema.model_validate(result_dict))
             else:
                 converted_results.append(schema.model_validate(result))
@@ -229,7 +262,9 @@ class SqlModelMapper(BaseMapper, Generic[ModelType]):
         db_session = db_session or self.db.session
 
         # Build base query
-        query = await self._build_query_with_fields(fields, **kwargs)
+        query, resolved_fields = await self._build_query_with_fields(
+            fields, schema, **kwargs
+        )
 
         # Get total count if requested
         total_count = 0
@@ -245,7 +280,9 @@ class SqlModelMapper(BaseMapper, Generic[ModelType]):
         record_list = exec_response.all()
 
         # Convert results if schema is specified
-        converted_list = await self._convert_results(record_list, fields, schema)
+        converted_list = await self._convert_results(
+            record_list, resolved_fields, schema
+        )
 
         return converted_list, total_count
 
@@ -277,7 +314,9 @@ class SqlModelMapper(BaseMapper, Generic[ModelType]):
         db_session = db_session or self.db.session
 
         # Build base query
-        query = await self._build_query_with_fields(fields, **kwargs)
+        query, resolved_fields = await self._build_query_with_fields(
+            fields, schema, **kwargs
+        )
 
         # Get total count if requested
         total_count = 0
@@ -306,7 +345,7 @@ class SqlModelMapper(BaseMapper, Generic[ModelType]):
         data_list = exec_response.all()
 
         # Convert results if schema is specified
-        converted_list = await self._convert_results(data_list, fields, schema)
+        converted_list = await self._convert_results(data_list, resolved_fields, schema)
 
         return converted_list, total_count
 
@@ -338,7 +377,9 @@ class SqlModelMapper(BaseMapper, Generic[ModelType]):
         db_session = db_session or self.db.session
 
         # Build base query
-        query = await self._build_query_with_fields(fields, **kwargs)
+        query, resolved_fields = await self._build_query_with_fields(
+            fields, schema, **kwargs
+        )
 
         # Apply parent ID filter
         if hasattr(self.model, constant.PARENT_ID) and (
@@ -377,7 +418,7 @@ class SqlModelMapper(BaseMapper, Generic[ModelType]):
         data_list = exec_response.all()
 
         # Convert results if schema is specified
-        converted_list = await self._convert_results(data_list, fields, schema)
+        converted_list = await self._convert_results(data_list, resolved_fields, schema)
 
         return converted_list, total_count
 

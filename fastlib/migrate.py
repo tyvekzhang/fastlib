@@ -24,7 +24,11 @@ model_path = src_parent / "src" / "main" / "app" / "model"
 MODEL_PACKAGES = [model_path]
 
 
-def import_sql_models(packages: Optional[list[Path]] = None) -> dict[str, type]:
+def import_sql_models(
+    packages: Optional[list[Path]] = None,
+    model_suffix_file_name: str = "_model",
+    model_file_name: str = "Model",
+) -> dict[str, type]:
     packages_to_scan = packages or MODEL_PACKAGES
     imported_models = {}
 
@@ -33,14 +37,14 @@ def import_sql_models(packages: Optional[list[Path]] = None) -> dict[str, type]:
             logger.warning(f"Package directory not found: {package_dir}")
             continue
 
-        for model_file in package_dir.glob("*_model.py"):
+        for model_file in package_dir.glob(f"*{model_suffix_file_name}.py"):
             relative_path = model_file.relative_to(src_parent)
             module_path = ".".join(relative_path.with_suffix("").parts)
 
             try:
                 module = importlib.import_module(module_path)
                 for name in dir(module):
-                    if name.endswith("Model"):
+                    if name.endswith(f"{model_file_name}"):
                         imported_models[name] = getattr(module, name)
 
             except ImportError as e:

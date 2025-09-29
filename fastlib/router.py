@@ -16,22 +16,16 @@ from loguru import logger
 
 from fastlib.utils import str_util
 
-# Constants
-DEFAULT_API_VERSION = "/v1"
-DEFAULT_CONTROLLER_FLAG = "controller"
-DEFAULT_ROUTER_FLAG = "router"
-DEFAULT_REMOVE_PREFIX_SET = {"sys"}
-CONTROLLER_FILE_PATTERN_TEMPLATE = "*_{}.py"
-MODULE_BASE_PREFIX = "src"
-MODULE_SEPARATOR = "."
-
 
 def register_router(
     controller_dirs: list[str] = None,
-    controller_flag: str = DEFAULT_CONTROLLER_FLAG,
-    router_flag: str = DEFAULT_ROUTER_FLAG,
+    controller_flag: str = "controller",
+    router_flag: str = "router",
     remove_prefix_set: set[str] = None,
-    api_version: str = DEFAULT_API_VERSION,
+    api_version: str = "/v1",
+    module_base_prefix: str = "src",
+    module_separator: str = ".",
+    controller_file_pattern_template: str = "*_{}.py",
 ) -> APIRouter:
     """Register routers recursively from controller directories.
 
@@ -41,6 +35,9 @@ def register_router(
         router_flag: Suffix to identify router variables (e.g. 'router' for '*_router')
         remove_prefix_set: set of prefixes to remove from router names
         api_version: API version prefix (e.g. '/v1')
+        module_base_prefix: Base prefix for module imports
+        module_separator: Separator for module paths
+        controller_file_pattern_template: Template for controller file pattern
 
     Returns:
         APIRouter with all discovered routes registered
@@ -48,7 +45,7 @@ def register_router(
     if controller_dirs is None:
         controller_dirs = []
     if remove_prefix_set is None:
-        remove_prefix_set = DEFAULT_REMOVE_PREFIX_SET
+        remove_prefix_set = {"sys"}
 
     router = APIRouter()
 
@@ -67,24 +64,24 @@ def register_router(
         module_name = controller_file.stem
         if "field_controller" in module_name:
             pass
-        # Calculate relative path from MODULE_BASE_PREFIX
+        # Calculate relative path from module_base_prefix
         try:
-            relative_path = str(controller_file).split(MODULE_BASE_PREFIX)[1]
+            relative_path = str(controller_file).split(module_base_prefix)[1]
         except ValueError:
-            # If the file is not under MODULE_BASE_PREFIX, use its absolute path
+            # If the file is not under module_base_prefix, use its absolute path
             relative_path = str(controller_file)
 
         # Convert path to module path (replace separators and remove .py)
         module_path = (
             relative_path.replace(".py", "")
-            .replace("/", MODULE_SEPARATOR)
-            .replace(os.sep, MODULE_SEPARATOR)
+            .replace("/", module_separator)
+            .replace(os.sep, module_separator)
             .lstrip(".")
         )
 
         # Ensure the path starts from the base prefix
-        if not module_path.startswith(MODULE_BASE_PREFIX):
-            module_path = f"{MODULE_BASE_PREFIX}.{module_path}"
+        if not module_path.startswith(module_base_prefix):
+            module_path = f"{module_base_prefix}.{module_path}"
 
         try:
             module = importlib.import_module(module_path)

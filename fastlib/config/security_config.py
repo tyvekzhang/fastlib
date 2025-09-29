@@ -26,20 +26,30 @@ class SecurityConfig(BaseConfig):
                              Default: Local development addresses.
         black_ip_list: Comma-separated list of blocked IP addresses. Default: empty.
     """
-    
+
     enable: bool = True
     algorithm: str = "HS256"
-    secret_key: str = field(default_factory=lambda: os.getenv("SECRET_KEY", "your-secret-key-change-in-production"))
+    secret_key: str = field(
+        default_factory=lambda: os.getenv(
+            "SECRET_KEY", "your-secret-key-change-in-production"
+        )
+    )
     access_token_expire_minutes: int = 30
     refresh_token_expire_minutes: int = 60 * 24 * 7  # 7 days
     enable_swagger: bool = False
     white_list_routes: str = "/api/v1/probe/liveness, /api/v1/user/register, /api/v1/auth:signInWithEmailAndPassword"
-    backend_cors_origins: str = "http://127.0.0.1:8000, http://localhost:8000, http://localhost"
+    backend_cors_origins: str = (
+        "http://127.0.0.1:8000, http://localhost:8000, http://localhost"
+    )
     black_ip_list: str = ""
 
     # Class-level constants for better organization
-    _DEFAULT_WHITE_LIST_ROUTES: ClassVar[str] = "/api/v1/probe/liveness, /api/v1/user/register, /api/v1/auth:signInWithEmailAndPassword"
-    _DEFAULT_CORS_ORIGINS: ClassVar[str] = "http://127.0.0.1:8000, http://localhost:8000, http://localhost"
+    _DEFAULT_WHITE_LIST_ROUTES: ClassVar[str] = (
+        "/api/v1/probe/liveness, /api/v1/user/register, /api/v1/auth:signInWithEmailAndPassword"
+    )
+    _DEFAULT_CORS_ORIGINS: ClassVar[str] = (
+        "http://127.0.0.1:8000, http://localhost:8000, http://localhost"
+    )
 
     def __post_init__(self) -> None:
         """Post-initialization processing."""

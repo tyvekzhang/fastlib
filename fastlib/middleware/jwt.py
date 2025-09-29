@@ -10,7 +10,7 @@ from loguru import logger
 from starlette.responses import JSONResponse
 
 from fastlib import ConfigManager, constant, security
-from fastlib.contextvars import current_user_id
+from fastlib.contextvars import clear_current_user, set_current_user
 from fastlib.enums import MediaTypeEnum
 from fastlib.schema import UserCredential
 
@@ -82,7 +82,7 @@ async def jwt_middleware(request: Request, call_next):
                 security.validate_token(token)
                 user_id = security.get_user_id(token)
 
-                ctx_token = current_user_id.set(user_id)
+                set_current_user(user_id=user_id)
 
             except PyJWTError as e:
                 logger.error(e)
@@ -107,4 +107,4 @@ async def jwt_middleware(request: Request, call_next):
 
     finally:
         if ctx_token is not None:
-            current_user_id.reset(ctx_token)
+            clear_current_user(ctx_token)

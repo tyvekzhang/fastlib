@@ -10,7 +10,7 @@ from typing import Optional, Union
 try:
     from cryptography.fernet import Fernet
     from cryptography.hazmat.primitives import hashes, serialization
-    from cryptography.hazmat.primitives.asymmetric import padding, rsa
+    from cryptography.hazmat.primitives.asymmetric import ed25519, padding, rsa
     from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
 
     HAS_CRYPTOGRAPHY = True
@@ -108,110 +108,6 @@ class SymmetricEncryption:
             InvalidToken: If decryption fails
         """
         return self._fernet.decrypt(ciphertext)
-
-    def encrypt_string(self, plaintext: str) -> str:
-        """
-        Encrypt string and return base64 encoded result.
-
-        Args:
-            plaintext: String to encrypt
-
-        Returns:
-            Base64 encoded encrypted string
-        """
-        encrypted = self.encrypt(plaintext)
-        return base64.b64encode(encrypted).decode("utf-8")
-
-    def decrypt_string(self, ciphertext: str) -> str:
-        """
-        Decrypt base64 encoded string.
-
-        Args:
-            ciphertext: Base64 encoded encrypted string
-
-        Returns:
-            Decrypted string
-        """
-        encrypted_bytes = base64.b64decode(ciphertext.encode("utf-8"))
-        decrypted = self.decrypt(encrypted_bytes)
-        return decrypted.decode("utf-8")
-
-
-class SimpleSymmetricEncryption:
-    """Simple symmetric encryption using XOR and HMAC (when cryptography is not available)."""
-
-    def __init__(self, key: Optional[bytes] = None) -> None:
-        """
-        Initialize simple symmetric encryption with a key.
-
-        Args:
-            key: Encryption key. If None, generates a new key.
-        """
-        if key is None:
-            self._key = os.urandom(32)
-        else:
-            self._key = key[:32] if len(key) > 32 else key.ljust(32, b"\x00")
-
-    def get_key(self) -> bytes:
-        """Get the encryption key."""
-        return self._key
-
-    def _xor_encrypt_decrypt(self, data: bytes) -> bytes:
-        """XOR encryption/decryption."""
-        key_len = len(self._key)
-        return bytes(data[i] ^ self._key[i % key_len] for i in range(len(data)))
-
-    def encrypt(self, plaintext: Union[str, bytes]) -> bytes:
-        """
-        Encrypt plaintext data using XOR + HMAC.
-
-        Args:
-            plaintext: Data to encrypt
-
-        Returns:
-            Encrypted data with HMAC
-        """
-        if isinstance(plaintext, str):
-            plaintext = plaintext.encode("utf-8")
-
-        # Add random IV
-        iv = os.urandom(16)
-
-        # XOR encrypt
-        encrypted = self._xor_encrypt_decrypt(plaintext)
-
-        # Create HMAC for integrity
-        mac = hmac.new(self._key, iv + encrypted, hashlib.sha256).digest()
-
-        return iv + mac + encrypted
-
-    def decrypt(self, ciphertext: bytes) -> bytes:
-        """
-        Decrypt ciphertext data.
-
-        Args:
-            ciphertext: Encrypted data to decrypt
-
-        Returns:
-            Decrypted data
-
-        Raises:
-            ValueError: If decryption fails or HMAC verification fails
-        """
-        if len(ciphertext) < 48:  # 16 (IV) + 32 (HMAC) = 48 minimum
-            raise ValueError("Invalid ciphertext length")
-
-        iv = ciphertext[:16]
-        mac = ciphertext[16:48]
-        encrypted = ciphertext[48:]
-
-        # Verify HMAC
-        expected_mac = hmac.new(self._key, iv + encrypted, hashlib.sha256).digest()
-        if not hmac.compare_digest(mac, expected_mac):
-            raise ValueError("HMAC verification failed")
-
-        # XOR decrypt
-        return self._xor_encrypt_decrypt(encrypted)
 
     def encrypt_string(self, plaintext: str) -> str:
         """
@@ -463,6 +359,248 @@ class RSASigner:
             return False
 
 
+class Ed25519Signer:
+    """Ed25519 elliptic curve digital signing and verification."""
+
+    def __init__(
+        self, private_key: Optional[bytes] = None, public_key: Optional[bytes] = None
+    ) -> None:
+        """
+        Initialize Ed25519 signer.
+
+        Args:
+            private_key: PEM encoded private key for signing
+            public_key: PEM encoded public key for verification
+
+        Raises:
+            ImportError: If cryptography package is not available
+        """
+        if not HAS_CRYPTOGRAPHY:
+            raise ImportError(
+                "cryptography package is required for Ed25519Signer. Install it with: uv add cryptography"
+            )
+
+        self._private_key = None
+        self._public_key = None
+
+        if private_key:
+            self._private_key = serialization.load_pem_private_key(
+                private_key, password=None
+            )
+            # Validate that it's an Ed25519 key
+            if not isinstance(self._private_key, ed25519.Ed25519PrivateKey):
+                raise ValueError("Private key is not an Ed25519 key")
+
+        if public_key:
+            self._public_key = serialization.load_pem_public_key(public_key)
+            # Validate that it's an Ed25519 key
+            if not isinstance(self._public_key, ed25519.Ed25519PublicKey):
+                raise ValueError("Public key is not an Ed25519 key")
+
+    @classmethod
+    def generate_keypair(cls) -> tuple[bytes, bytes]:
+        """
+        Generate Ed25519 key pair.
+
+        Returns:
+            Tuple of (private_key_pem, public_key_pem)
+
+        Raises:
+            ImportError: If cryptography package is not available
+        """
+        if not HAS_CRYPTOGRAPHY:
+            raise ImportError(
+                "cryptography package is required for Ed25519Signer. Install it with: uv add cryptography"
+            )
+
+        # Generate private key
+        private_key = ed25519.Ed25519PrivateKey.generate()
+
+        # Serialize private key
+        private_pem = private_key.private_bytes(
+            encoding=serialization.Encoding.PEM,
+            format=serialization.PrivateFormat.PKCS8,
+            encryption_algorithm=serialization.NoEncryption(),
+        )
+
+        # Serialize public key
+        public_pem = private_key.public_key().public_bytes(
+            encoding=serialization.Encoding.PEM,
+            format=serialization.PublicFormat.SubjectPublicKeyInfo,
+        )
+
+        return private_pem, public_pem
+
+    @classmethod
+    def from_private_key_bytes(cls, private_key_bytes: bytes) -> "Ed25519Signer":
+        """
+        Create Ed25519Signer from raw private key bytes.
+
+        Args:
+            private_key_bytes: Raw 32-byte private key
+
+        Returns:
+            Ed25519Signer instance
+        """
+        if not HAS_CRYPTOGRAPHY:
+            raise ImportError(
+                "cryptography package is required for Ed25519Signer. Install it with: uv add cryptography"
+            )
+
+        private_key = ed25519.Ed25519PrivateKey.from_private_bytes(private_key_bytes)
+        private_pem = private_key.private_bytes(
+            encoding=serialization.Encoding.PEM,
+            format=serialization.PrivateFormat.PKCS8,
+            encryption_algorithm=serialization.NoEncryption(),
+        )
+        return cls(private_key=private_pem)
+
+    def get_private_key_bytes(self) -> bytes:
+        """
+        Get raw private key bytes (32 bytes).
+
+        Returns:
+            Raw private key bytes
+
+        Raises:
+            ValueError: If private key is not available
+        """
+        if not self._private_key:
+            raise ValueError("Private key not available")
+
+        # Extract raw private key bytes from PEM
+        private_bytes = self._private_key.private_bytes(
+            encoding=serialization.Encoding.Raw,
+            format=serialization.PrivateFormat.Raw,
+            encryption_algorithm=serialization.NoEncryption(),
+        )
+        return private_bytes
+
+    def get_public_key_bytes(self) -> bytes:
+        """
+        Get raw public key bytes (32 bytes).
+
+        Returns:
+            Raw public key bytes
+
+        Raises:
+            ValueError: If public key is not available
+        """
+        if self._public_key:
+            public_key = self._public_key
+        elif self._private_key:
+            public_key = self._private_key.public_key()
+        else:
+            raise ValueError("No public key available")
+
+        public_bytes = public_key.public_bytes(
+            encoding=serialization.Encoding.Raw,
+            format=serialization.PublicFormat.Raw,
+        )
+        return public_bytes
+
+    def sign(self, message: Union[str, bytes]) -> str:
+        """
+        Create Ed25519 signature for message.
+
+        Args:
+            message: Message to sign
+
+        Returns:
+            Base64 encoded signature
+
+        Raises:
+            ValueError: If private key is not available
+        """
+        if not self._private_key:
+            raise ValueError("Private key required for signing")
+
+        if isinstance(message, str):
+            message = message.encode("utf-8")
+
+        # Ed25519 signing is straightforward, no padding needed
+        signature = self._private_key.sign(message)
+
+        return base64.b64encode(signature).decode("utf-8")
+
+    def verify(self, message: Union[str, bytes], signature: str) -> bool:
+        """
+        Verify Ed25519 signature.
+
+        Args:
+            message: Original message
+            signature: Base64 encoded signature to verify
+
+        Returns:
+            True if signature is valid, False otherwise
+        """
+        public_key = self._public_key
+        if not public_key and self._private_key:
+            public_key = self._private_key.public_key()
+
+        if not public_key:
+            return False
+
+        try:
+            if isinstance(message, str):
+                message = message.encode("utf-8")
+
+            signature_bytes = base64.b64decode(signature.encode("utf-8"))
+
+            public_key.verify(signature_bytes, message)
+            return True
+        except Exception:
+            return False
+
+    def sign_detached(self, message: Union[str, bytes]) -> bytes:
+        """
+        Create detached Ed25519 signature (raw bytes).
+
+        Args:
+            message: Message to sign
+
+        Returns:
+            Raw signature bytes (64 bytes)
+
+        Raises:
+            ValueError: If private key is not available
+        """
+        if not self._private_key:
+            raise ValueError("Private key required for signing")
+
+        if isinstance(message, str):
+            message = message.encode("utf-8")
+
+        return self._private_key.sign(message)
+
+    def verify_detached(self, message: Union[str, bytes], signature: bytes) -> bool:
+        """
+        Verify detached Ed25519 signature.
+
+        Args:
+            message: Original message
+            signature: Raw signature bytes to verify
+
+        Returns:
+            True if signature is valid, False otherwise
+        """
+        public_key = self._public_key
+        if not public_key and self._private_key:
+            public_key = self._private_key.public_key()
+
+        if not public_key:
+            return False
+
+        try:
+            if isinstance(message, str):
+                message = message.encode("utf-8")
+
+            public_key.verify(signature, message)
+            return True
+        except Exception:
+            return False
+
+
 def generate_random_key(length: int = 32) -> str:
     """
     Generate a random key for symmetric encryption.
@@ -534,29 +672,31 @@ def verify_password(password: str, hashed_password: str, salt: str) -> bool:
         return False
 
 
-def create_symmetric_encryption(
-    key: Optional[bytes] = None,
-) -> Union[SymmetricEncryption, SimpleSymmetricEncryption]:
+def create_symmetric_encryption(key: Optional[bytes] = None) -> SymmetricEncryption:
     """
-    Create a symmetric encryption instance using the best available method.
+    Create a symmetric encryption instance.
 
     Args:
         key: Encryption key. If None, generates a new key.
 
     Returns:
-        SymmetricEncryption if cryptography is available, SimpleSymmetricEncryption otherwise
+        SymmetricEncryption instance
+
+    Raises:
+        ImportError: If cryptography package is not available
     """
-    if HAS_CRYPTOGRAPHY:
-        return SymmetricEncryption(key)
-    else:
-        return SimpleSymmetricEncryption(key)
+    if not HAS_CRYPTOGRAPHY:
+        raise ImportError(
+            "cryptography package is required for encryption. Install it with: uv add cryptography"
+        )
+    return SymmetricEncryption(key)
 
 
 def encrypt_data(
     data: Union[str, bytes], key: Optional[bytes] = None
 ) -> tuple[bytes, bytes]:
     """
-    Encrypt data using the best available symmetric encryption.
+    Encrypt data using symmetric encryption.
 
     Args:
         data: Data to encrypt
@@ -564,6 +704,9 @@ def encrypt_data(
 
     Returns:
         Tuple of (encrypted_data, key_used)
+
+    Raises:
+        ImportError: If cryptography package is not available
     """
     encryptor = create_symmetric_encryption(key)
     encrypted = encryptor.encrypt(data)
@@ -572,7 +715,7 @@ def encrypt_data(
 
 def decrypt_data(encrypted_data: bytes, key: bytes) -> bytes:
     """
-    Decrypt data using the best available symmetric encryption.
+    Decrypt data using symmetric encryption.
 
     Args:
         encrypted_data: Encrypted data
@@ -580,6 +723,9 @@ def decrypt_data(encrypted_data: bytes, key: bytes) -> bytes:
 
     Returns:
         Decrypted data
+
+    Raises:
+        ImportError: If cryptography package is not available
     """
     encryptor = create_symmetric_encryption(key)
     return encryptor.decrypt(encrypted_data)

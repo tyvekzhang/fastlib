@@ -1,6 +1,6 @@
 [project]
 name = "fastlib-py"
-version = "0.2.6"
+version = "0.2.7"
 description = "Fastlib, high performance, easy to use, fast to code, ready for production"
 readme = "README.md"
 keywords = [
@@ -101,9 +101,8 @@ lint.isort.known-third-party = [
 lint.pyupgrade.keep-runtime-typing = true
 
 [tool.coverage.run]
-parallel = true
 data_file = "coverage/.coverage"
-source = [ "src/main/app", "src/tests", "main.py" ]
+source = [ "fastlib" ]
 context = '${CONTEXT}'
 dynamic_context = "test_function"
 omit = [
@@ -116,6 +115,8 @@ sort = "-Cover"
 
 [tool.coverage.html]
 show_contexts = true
+directory = "coverage/html"
+title = "FastLib Coverage Report"
 
 [tool.mypy]
 strict = true

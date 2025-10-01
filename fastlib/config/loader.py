@@ -5,6 +5,7 @@ import os
 from typing import Any, Optional
 
 import yaml
+from loguru import logger
 
 from fastlib import constant
 from fastlib.config import utils as config_util
@@ -47,7 +48,10 @@ class ConfigLoader:
             yaml.YAMLError: If there is an error parsing the YAML
         """
         if not os.path.exists(file_path):
-            raise FileNotFoundError(f"Config file not found: {file_path}")
+            logger.warning(
+                f"Config file not found: {file_path}, will use the default config"
+            )
+            return {}
 
         with open(file_path, encoding="utf-8") as file:
             try:

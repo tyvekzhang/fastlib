@@ -123,9 +123,6 @@ class ConfigManager:
         for config_name in ConfigRegistry.list_registered():
             config_data = ConfigManager._global_config_dict.get(config_name, {})
 
-            if not config_data:
-                continue
-
             try:
                 instance = ConfigRegistry.create_instance(
                     config_name, {config_name: config_data}

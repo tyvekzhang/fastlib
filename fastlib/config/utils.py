@@ -172,7 +172,11 @@ def get_alembic_db_info(
 
 def get_db_url() -> str:
     """Get the database connection URL from alembic.ini configuration."""
-    return get_alembic_db_info(file_util.get_file_path("alembic.ini")).full_url
+    try:
+        return get_alembic_db_info(file_util.get_file_path("alembic.ini")).full_url
+    except FileNotFoundError:
+        logger.warning("Can not found alembic.ini in the project, use default db url")
+        return "sqlite+aiosqlite:///./fastlib.db"
 
 
 def get_sqlite_db_path() -> str:

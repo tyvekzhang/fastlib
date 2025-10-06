@@ -1,5 +1,6 @@
+# SPDX-License-Identifier: MIT
 """Export session symbols"""
 
-from .db_session import db_session
+from .db_engine import get_async_engine
 
-__all__ = [db_session]
+__all__ = [get_async_engine]

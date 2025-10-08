@@ -6,10 +6,12 @@ Handler for stream module
 from __future__ import annotations
 
 import asyncio
-from loguru import logger
 from abc import ABC, abstractmethod
+from collections.abc import AsyncIterable
 from datetime import datetime
-from typing import AsyncIterable, Generic, TypeVar
+from typing import Generic, TypeVar
+
+from loguru import logger
 
 from fastlib.cache.base import Cache
 from fastlib.cache.manager import get_cache_client
@@ -161,7 +163,7 @@ class AsyncStreamHandler(StreamHandler[T]):
             yield MessageUpdatedNotify().model_dump_json(**model_dump_kwargs)
             return
 
-        _buffer_copy = [item for item in self._buffer]
+        _buffer_copy = list(self._buffer)
         queue = asyncio.Queue[V]()
         self._content_queues.append(queue)
 

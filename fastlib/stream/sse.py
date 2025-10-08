@@ -2,16 +2,13 @@
 """
 Copy from https://github.com/sysid/sse-starlette/blob/main/sse_starlette/sse.py
 """
+
 import contextvars
+from collections.abc import AsyncIterable, Awaitable, Coroutine, Iterator, Mapping
 from datetime import datetime, timezone
 from typing import (
     Any,
-    AsyncIterable,
-    Awaitable,
     Callable,
-    Coroutine,
-    Iterator,
-    Mapping,
     Optional,
     Union,
 )
@@ -22,10 +19,9 @@ from starlette.background import BackgroundTask
 from starlette.concurrency import iterate_in_threadpool
 from starlette.datastructures import MutableHeaders
 from starlette.responses import Response
-from starlette.types import Receive, Scope, Send, Message
+from starlette.types import Message, Receive, Scope, Send
 
 from fastlib.stream.event import ServerSentEvent, ensure_bytes
-
 
 # Context variable for exit events per event loop
 _exit_event_context: contextvars.ContextVar[Optional[anyio.Event]] = (

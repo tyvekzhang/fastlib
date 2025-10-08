@@ -2,10 +2,11 @@
 """
 Copy from https://github.com/sysid/sse-starlette/blob/main/sse_starlette/event.py
 """
+
 import io
-import re
 import json
-from typing import Optional, Any, Union
+import re
+from typing import Any, Optional, Union
 
 
 class ServerSentEvent:

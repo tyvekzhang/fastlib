@@ -550,7 +550,7 @@ class SqlModelMapper(BaseMapper, Generic[ModelType]):
 
         # Query children for the current level
         stmt = select(self.model).where(self.model.parent_id.in_(parent_ids))
-        result = await db_session.execute(stmt)
+        result = await db_session.exec(stmt)
         children = result.scalars().all()
 
         # Convert ORM children to SchemaType instances

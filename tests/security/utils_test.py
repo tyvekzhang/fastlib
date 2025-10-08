@@ -1,28 +1,27 @@
-import base64
-import json
 import time
 
 import pytest
 
 # Import the module under test
 from fastlib.config.manager import ConfigManager
+
 ConfigManager.initialize_global_config()
-from fastlib.security.utils import (
-    SymmetricEncryption,
+from fastlib.security.utils import (  # noqa: E402
     Ed25519Signer,
     HMACSigner,
     RSASigner,
+    SymmetricEncryption,
+    decrypt_data,
+    encrypt_data,
+    generate_random_key,
     hash_password,
     verify_password,
-    generate_random_key,
-    encrypt_data,
-    decrypt_data,
 )
 
 
 class TestSymmetricEncryption:
     """Test symmetric encryption functionality"""
-    
+
     def test_encrypt_decrypt_with_generated_key(self):
         """Test encryption and decryption with auto-generated key"""
         encryptor = SymmetricEncryption()
@@ -70,7 +69,7 @@ class TestSymmetricEncryption:
 
 class TestEd25519Signing:
     """Test Ed25519 signing functionality"""
-    
+
     def setup_method(self):
         """Setup before each test method"""
         self.private_key, self.public_key = Ed25519Signer.generate_keypair()
@@ -107,7 +106,7 @@ class TestEd25519Signing:
 
 class TestHMACSigning:
     """Test HMAC signing functionality"""
-    
+
     def setup_method(self):
         """Setup before each test method"""
         self.api_secret = "my_api_secret_key"
@@ -139,14 +138,14 @@ class TestHMACSigning:
         """Test different hash algorithms"""
         hmac_sha512 = HMACSigner(self.api_secret, algorithm="sha512")
         sha512_signature = hmac_sha512.sign_data(self.api_data)
-        
+
         # Verify SHA512 signature can also be correctly verified
         assert hmac_sha512.verify_data(self.api_data, sha512_signature) is True
 
 
 class TestRSASigning:
     """Test RSA signing functionality"""
-    
+
     def test_sign_verify(self):
         """Test RSA signing and verification"""
         private_key, public_key = RSASigner.generate_keypair(key_size=2048)
@@ -162,7 +161,7 @@ class TestRSASigning:
 
 class TestPasswordHashing:
     """Test password hashing functionality"""
-    
+
     def test_hash_verify_password(self):
         """Test password hashing and verification"""
         user_password = "my_secure_password_123"
@@ -179,11 +178,11 @@ class TestPasswordHashing:
 
 class TestUtilityFunctions:
     """Test utility functions"""
-    
+
     def test_generate_random_key(self):
         """Test generating random key"""
         random_key = generate_random_key(44)
-        
+
         # Ensure two generated keys are different
         another_key = generate_random_key(44)
         assert random_key != another_key
@@ -194,16 +193,16 @@ class TestUtilityFunctions:
         encrypted, key_used = encrypt_data(sensitive_data)
         decrypted = decrypt_data(encrypted, key_used)
 
-        assert decrypted == sensitive_data.encode('utf-8')
+        assert decrypted == sensitive_data.encode("utf-8")
 
 
 class TestPerformance:
     """Performance testing"""
-    
+
     def test_ed25519_performance(self):
         """Test Ed25519 performance"""
         message = "This is a test message for performance comparison" * 10
-        
+
         ed_private, ed_public = Ed25519Signer.generate_keypair()
         ed_signer = Ed25519Signer(private_key=ed_private)
         ed_verifier = Ed25519Signer(public_key=ed_public)
@@ -242,27 +241,35 @@ class TestPerformance:
 # Parameterized test examples
 class TestParameterized:
     """Parameterized testing"""
-    
-    @pytest.mark.parametrize("password,expected_length", [
-        ("short", 44),
-        ("very_long_password_that_exceeds_normal_length", 44),
-        ("123456", 44),
-        ("special_chars!@#$%^&*()", 44),
-    ])
-    def test_password_based_encryption_various_passwords(self, password, expected_length):
+
+    @pytest.mark.parametrize(
+        "password,expected_length",
+        [
+            ("short", 44),
+            ("very_long_password_that_exceeds_normal_length", 44),
+            ("123456", 44),
+            ("special_chars!@#$%^&*()", 44),
+        ],
+    )
+    def test_password_based_encryption_various_passwords(
+        self, password, expected_length
+    ):
         """Test encryption with different passwords"""
         encryptor = SymmetricEncryption.from_password(password)
         key = encryptor.get_key()
         assert len(key) == expected_length
 
-    @pytest.mark.parametrize("message", [
-        "",
-        "a",
-        "hello world",
-        "Chinese message",
-        "a" * 1000,  # Long message
-        "🍎🐍",  # Special characters
-    ])
+    @pytest.mark.parametrize(
+        "message",
+        [
+            "",
+            "a",
+            "hello world",
+            "Chinese message",
+            "a" * 1000,  # Long message
+            "🍎🐍",  # Special characters
+        ],
+    )
     def test_encrypt_decrypt_various_messages(self, message):
         """Test encryption and decryption of various messages"""
         encryptor = SymmetricEncryption()

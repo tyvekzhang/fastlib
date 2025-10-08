@@ -2,16 +2,17 @@
 """
 Schema for stream module
 """
+
 from __future__ import annotations
 
 import uuid
+from collections.abc import Iterable
 from datetime import datetime, timezone
-from typing import Any, Generic, Iterable, Literal, TypeVar
+from typing import Any, Generic, Literal, TypeVar
 
 from pydantic import BaseModel, Field
 
 from fastlib.stream.enums import MessageStatus
-
 
 # Type alias for notification types for better readability and reusability
 NotifyType = Literal[

@@ -7,7 +7,7 @@ from typing import Any, Optional
 import yaml
 from loguru import logger
 
-from fastlib import constant
+from fastlib import constants as constant
 from fastlib.config import utils as config_util
 
 

@@ -5,7 +5,7 @@ import json
 from pathlib import Path
 from typing import Optional, Union
 
-from fastlib.constant import RESOURCE_DIR
+from fastlib.constants import RESOURCE_DIR
 from fastlib.i18n.types import Language
 
 from .manager import get_language

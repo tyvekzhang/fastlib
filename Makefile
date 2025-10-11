@@ -1,6 +1,5 @@
-.PHONY: help install lint test build publish clean
+﻿.PHONY: help install lint test build publish clean
 
-# Variables
 SOURCE_DIR = fastlib
 PYTHON_VERSION = 3.11
 

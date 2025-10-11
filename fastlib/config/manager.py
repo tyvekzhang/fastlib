@@ -6,12 +6,12 @@ from typing import Any, Optional
 
 from fastlib import constants as constant
 from fastlib.config import utils as config_util
-from fastlib.config.base import BaseConfig
 from fastlib.config._database_config import DatabaseConfig
-from fastlib.config.loader import ConfigLoader
-from fastlib.config.registry import ConfigRegistry
 from fastlib.config._security_config import SecurityConfig
 from fastlib.config._server_config import ServerConfig
+from fastlib.config.base import BaseConfig
+from fastlib.config.loader import ConfigLoader
+from fastlib.config.registry import ConfigRegistry
 
 
 # Decorator for easy registration

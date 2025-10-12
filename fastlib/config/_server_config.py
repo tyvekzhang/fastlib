@@ -19,6 +19,7 @@ class ServerConfig(BaseConfig):
         name: The server name.
         version: The server version.
         app_desc: The server description.
+        enable_api_prefix: Enable the API prefix for routes.
         api_prefix: The API prefix for routes.
         debug: Whether to enable debug mode.
         workers: The number of worker processes.
@@ -35,6 +36,7 @@ class ServerConfig(BaseConfig):
     app_desc: str = field(
         default_factory=lambda: ServerConfig._project_config.description
     )
+    enable_api_prefix: bool = False
     api_prefix: str = "/api"
     debug: bool = False
     workers: int = 1

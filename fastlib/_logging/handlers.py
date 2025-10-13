@@ -10,7 +10,7 @@ from typing import Optional
 from loguru import logger
 
 from fastlib.config.manager import ConfigManager
-from fastlib.logging.config import LogConfig
+from fastlib._logging.config import LogConfig
 
 
 class Logger:

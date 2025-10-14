@@ -7,7 +7,7 @@ from __future__ import annotations
 
 import uuid
 from collections.abc import Iterable
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from typing import Any, Generic, Literal, TypeVar
 
 from pydantic import BaseModel, Field
@@ -99,42 +99,15 @@ class BaseMessage(BaseModel, Generic[V]):
 
     # 2. Use timezone-aware datetime objects.
     # datetime.now(timezone.utc) is the modern replacement for datetime.utcnow().
-    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
-    updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    created_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
+    updated_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
 
     def update_status(self, status: MessageStatus) -> None:
         """Updates the message status and the updated_at timestamp."""
         self.status = status
-        self.updated_at = datetime.now(timezone.utc)
+        self.updated_at = datetime.now(UTC)
 
     def append_chunks(self, chunks: Iterable[V]) -> None:
         """Appends new message chunks to the content and updates the timestamp."""
         self.content.extend(chunks)
-        self.updated_at = datetime.now(timezone.utc)
-
-
-# --- Example Usage ---
-if __name__ == "__main__":
-    # 1. Create different types of notification messages using the factory function.
-    update_notify = create_notify_message("message_updated")
-    completed_notify = create_notify_message("message_completed")
-
-    print("--- Update Notify ---")
-    print(update_notify.model_dump_json(indent=2))
-
-    print("\n--- Completed Notify ---")
-    print(completed_notify.model_dump_json(indent=2))
-
-    # 2. Use these messages within a BaseMessage container.
-    message_container = BaseMessage[NotifyStreamMessage]()
-    print("\n--- Initial Message Container ---")
-    print(message_container.model_dump_json(indent=2))
-    # Note that the `id` is a standard UUID string and `created_at` has a 'Z' (or +00:00)
-    # indicating it is timezone-aware (UTC).
-
-    # 3. Append chunks and update status.
-    message_container.append_chunks([update_notify, completed_notify])
-    message_container.update_status(MessageStatus.COMPLETED)
-
-    print("\n--- Final Message Container ---")
-    print(message_container.model_dump_json(indent=2))
+        self.updated_at = datetime.now(UTC)

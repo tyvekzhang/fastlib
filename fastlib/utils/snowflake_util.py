@@ -2,7 +2,6 @@
 
 import threading
 import time
-from typing import Optional
 
 
 class SnowflakeIDGenerator:
@@ -181,7 +180,7 @@ class SnowflakeIDGenerator:
 
 
 # Global Snowflake ID generator instance
-_snowflake_generator: Optional[SnowflakeIDGenerator] = None
+_snowflake_generator: SnowflakeIDGenerator | None = None
 _generator_lock = threading.Lock()
 
 

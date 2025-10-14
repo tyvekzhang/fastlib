@@ -2,7 +2,7 @@
 """Configuration registry for dynamic configuration class management."""
 
 # Import BaseConfig from config module to avoid circular imports
-from typing import Any, Optional
+from typing import Any
 
 
 class ConfigRegistry:
@@ -36,7 +36,7 @@ class ConfigRegistry:
         cls._registry[name] = config_class
 
     @classmethod
-    def get_config_class(cls, name: str) -> Optional[type]:
+    def get_config_class(cls, name: str) -> type | None:
         """
         Get a registered configuration class.
 
@@ -49,7 +49,7 @@ class ConfigRegistry:
         return cls._registry.get(name)
 
     @classmethod
-    def create_instance(cls, name: str, config_dict: dict[str, Any]) -> Optional[Any]:
+    def create_instance(cls, name: str, config_dict: dict[str, Any]) -> Any | None:
         """
         Create an instance of a registered configuration class.
 

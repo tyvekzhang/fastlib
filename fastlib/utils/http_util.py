@@ -9,7 +9,7 @@ import asyncio
 import os
 import time
 import uuid
-from typing import Any, Optional
+from typing import Any
 
 import httpx
 from loguru import logger
@@ -45,9 +45,9 @@ def _handle_response(response: httpx.Response, url: str) -> Any:
 
 async def async_http_get(
     url: str,
-    params: Optional[dict[str, Any]] = None,
+    params: dict[str, Any] | None = None,
     timeout: float = 10.0,
-    headers: Optional[dict[str, str]] = None,
+    headers: dict[str, str] | None = None,
 ) -> Any:
     """
     Make an asynchronous HTTP GET request.
@@ -80,9 +80,9 @@ async def async_http_get(
 
 def http_get(
     url: str,
-    params: Optional[dict[str, Any]] = None,
+    params: dict[str, Any] | None = None,
     timeout: float = 10.0,
-    headers: Optional[dict[str, str]] = None,
+    headers: dict[str, str] | None = None,
 ) -> Any:
     """
     Make a synchronous HTTP GET request.
@@ -114,7 +114,7 @@ def http_get(
 
 
 def http_post(
-    url: str, data: Any, headers: Optional[dict[str, Any]] = None, timeout: float = 10.0
+    url: str, data: Any, headers: dict[str, Any] | None = None, timeout: float = 10.0
 ) -> Any:
     """
     Make a synchronous HTTP POST request.
@@ -148,7 +148,7 @@ def http_post(
 async def async_http_post(
     url: str,
     data: Any,
-    headers: Optional[dict[str, Any]] = None,
+    headers: dict[str, Any] | None = None,
     timeout: float = 10.0,
     max_retries: int = 3,
     retry_delay: float = 0.5,
@@ -217,7 +217,7 @@ async def async_http_post(
 
 def download_file(
     file_url: str, directory_path: str, timeout: int = 60, verify_ssl: bool = True
-) -> Optional[str]:
+) -> str | None:
     """
     Download a file from a URL to a local directory.
 

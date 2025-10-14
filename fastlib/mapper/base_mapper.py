@@ -3,7 +3,7 @@
 
 from abc import ABC, abstractmethod
 from collections.abc import Sequence
-from typing import Any, Generic, Optional, TypeVar
+from typing import Any, Generic, TypeVar
 
 from pydantic import BaseModel
 from sqlmodel import SQLModel
@@ -19,7 +19,7 @@ IDType = TypeVar("IDType", int, str)
 class BaseMapper(ABC, Generic[ModelType]):
     @abstractmethod
     async def insert(
-        self, *, data: ModelType, db_session: Optional[AsyncSession] = None
+        self, *, data: ModelType, db_session: AsyncSession | None = None
     ) -> ModelType:
         """Insert a single data into the database.
 
@@ -37,7 +37,7 @@ class BaseMapper(ABC, Generic[ModelType]):
         self,
         *,
         data_list: list[ModelType],
-        db_session: Optional[AsyncSession] = None,
+        db_session: AsyncSession | None = None,
     ) -> int:
         """Insert data list into the database in a single operation.
 
@@ -52,8 +52,8 @@ class BaseMapper(ABC, Generic[ModelType]):
 
     @abstractmethod
     async def select_by_id(
-        self, *, id: IDType, db_session: Optional[AsyncSession] = None
-    ) -> Optional[ModelType]:
+        self, *, id: IDType, db_session: AsyncSession | None = None
+    ) -> ModelType | None:
         """Select a single record by its ID.
 
         Args:
@@ -67,7 +67,7 @@ class BaseMapper(ABC, Generic[ModelType]):
 
     @abstractmethod
     async def select_by_ids(
-        self, *, ids: list[IDType], db_session: Optional[AsyncSession] = None
+        self, *, ids: list[IDType], db_session: AsyncSession | None = None
     ) -> list[ModelType]:
         """Select record list by their IDs.
 
@@ -86,7 +86,7 @@ class BaseMapper(ABC, Generic[ModelType]):
         *,
         current: IDType,
         page_size: int,
-        db_session: Optional[AsyncSession] = None,
+        db_session: AsyncSession | None = None,
         **kwargs,
     ) -> tuple[list[ModelType], int]:
         """Select record list with pagination.
@@ -109,7 +109,7 @@ class BaseMapper(ABC, Generic[ModelType]):
         current: IDType,
         page_size: int,
         sort: list[SortItem] = None,
-        db_session: Optional[AsyncSession] = None,
+        db_session: AsyncSession | None = None,
         **kwargs,
     ) -> tuple[list[ModelType], int]:
         """Select record list with pagination and sorting.
@@ -133,7 +133,7 @@ class BaseMapper(ABC, Generic[ModelType]):
         current: IDType,
         page_size: int,
         sort: list[SortItem] = None,
-        db_session: Optional[AsyncSession] = None,
+        db_session: AsyncSession | None = None,
         **kwargs,
     ) -> tuple[list[ModelType], int]:
         """Select record list with pagination and sorting by parent ID.
@@ -152,7 +152,7 @@ class BaseMapper(ABC, Generic[ModelType]):
 
     @abstractmethod
     async def update_by_id(
-        self, *, data: ModelType, db_session: Optional[AsyncSession] = None
+        self, *, data: ModelType, db_session: AsyncSession | None = None
     ) -> int:
         """Update a record by its ID.
 
@@ -170,7 +170,7 @@ class BaseMapper(ABC, Generic[ModelType]):
         self,
         *,
         data: Sequence[dict[str, Any]],
-        db_session: Optional[AsyncSession] = None,
+        db_session: AsyncSession | None = None,
     ) -> int:
         """
         Update multiple records.
@@ -190,7 +190,7 @@ class BaseMapper(ABC, Generic[ModelType]):
         *,
         ids: list[IDType],
         data: dict[str, Any],
-        db_session: Optional[AsyncSession] = None,
+        db_session: AsyncSession | None = None,
     ) -> int:
         """Update record list by their IDs with the same values.
 
@@ -206,7 +206,7 @@ class BaseMapper(ABC, Generic[ModelType]):
 
     @abstractmethod
     async def delete_by_id(
-        self, *, id: IDType, db_session: Optional[AsyncSession] = None
+        self, *, id: IDType, db_session: AsyncSession | None = None
     ) -> int:
         """Delete a data by its ID.
 
@@ -221,7 +221,7 @@ class BaseMapper(ABC, Generic[ModelType]):
 
     @abstractmethod
     async def batch_delete_by_ids(
-        self, *, ids: list[IDType], db_session: Optional[AsyncSession] = None
+        self, *, ids: list[IDType], db_session: AsyncSession | None = None
     ) -> int:
         """Delete multiple data_list by their IDs.
 
@@ -242,7 +242,7 @@ class BaseMapper(ABC, Generic[ModelType]):
         schema_class: SchemaType,
         level: int = 1,
         max_level: int = 5,
-        db_session: Optional[AsyncSession] = None,
+        db_session: AsyncSession | None = None,
     ) -> list[SchemaType]:
         """
         Recursively fetch children of given parent items up to 5 levels.

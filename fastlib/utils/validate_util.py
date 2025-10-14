@@ -3,7 +3,6 @@
 Validation service module for Pydantic models.
 """
 
-from typing import Optional
 from pydantic import BaseModel, ValidationError
 
 
@@ -11,7 +10,7 @@ class ValidateService:
     """A service class providing validation utilities for Pydantic models."""
 
     @staticmethod
-    def validate(obj: BaseModel) -> Optional[str]:
+    def validate(obj: BaseModel) -> str | None:
         """Validate a Pydantic model instance.
 
         Args:
@@ -28,12 +27,15 @@ class ValidateService:
         except ValidationError as e:
             # Concatenate error messages
             errors = ", ".join(
-                [f"{'->'.join(map(str, error['loc']))}: {error['msg']}" for error in e.errors()]
+                [
+                    f"{'->'.join(map(str, error['loc']))}: {error['msg']}"
+                    for error in e.errors()
+                ]
             )
             return errors
 
     @staticmethod
-    def get_validate_err_msg(e: ValidationError) -> Optional[str]:
+    def get_validate_err_msg(e: ValidationError) -> str | None:
         """Format validation error messages from a ValidationError exception.
 
         Args:

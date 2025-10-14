@@ -7,13 +7,13 @@ for different caching implementations like Redis, memory cache, etc.
 
 from abc import ABC, abstractmethod
 from contextlib import asynccontextmanager
-from typing import Any, Optional
+from typing import Any
 
 
 class CacheError(Exception):
     """Custom exception for cache-related errors."""
 
-    def __init__(self, message: str, original_error: Optional[Exception] = None):
+    def __init__(self, message: str, original_error: Exception | None = None):
         self.message = message
         self.original_error = original_error
         super().__init__(f"Cache Error: {message}")
@@ -37,7 +37,7 @@ class Cache(ABC):
         self,
         key: str,
         value: Any,
-        ex: Optional[int] = None,
+        ex: int | None = None,
         nx: bool = False,
         xx: bool = False,
     ) -> bool:
@@ -45,7 +45,7 @@ class Cache(ABC):
         pass
 
     @abstractmethod
-    async def get(self, key: str) -> Optional[Any]:
+    async def get(self, key: str) -> Any | None:
         """Get a value from cache."""
         pass
 
@@ -85,7 +85,7 @@ class Cache(ABC):
         pass
 
     @abstractmethod
-    async def hget(self, name: str, key: str) -> Optional[Any]:
+    async def hget(self, name: str, key: str) -> Any | None:
         """Get a field from a hash."""
         pass
 
@@ -110,12 +110,12 @@ class Cache(ABC):
         pass
 
     @abstractmethod
-    async def lpop(self, name: str) -> Optional[Any]:
+    async def lpop(self, name: str) -> Any | None:
         """Pop a value from the left of a list."""
         pass
 
     @abstractmethod
-    async def rpop(self, name: str) -> Optional[Any]:
+    async def rpop(self, name: str) -> Any | None:
         """Pop a value from the right of a list."""
         pass
 

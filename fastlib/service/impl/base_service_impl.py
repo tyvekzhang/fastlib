@@ -1,7 +1,8 @@
 # SPDX-License-Identifier: MIT
 """Base service implementation with transaction support"""
 
-from typing import Any, Generic, Optional, TypeVar
+import builtins
+from typing import Any, Generic, TypeVar
 
 from pydantic import BaseModel
 from sqlmodel import SQLModel
@@ -13,11 +14,12 @@ from fastlib.service.base_service import BaseService
 
 IDType = TypeVar("IDType", int, str)
 ModelType = TypeVar("ModelType", bound=SQLModel)
+Mapper = TypeVar("Mapper", bound=BaseMapper)
 
 
 class BaseServiceImpl(
+    Generic[Mapper, ModelType],
     BaseService[ModelType],
-    Generic[ModelType],
 ):
     """Base service implementation with common CRUD operations and transaction support"""
 
@@ -30,15 +32,15 @@ class BaseServiceImpl(
         self.model = model
 
     async def save(
-        self, data: BaseModel, db_session: Optional[AsyncSession] = None
+        self, data: BaseModel, db_session: AsyncSession | None = None
     ) -> BaseModel:
         """Insert a single record"""
         model_data = self.model(**data.model_dump())
         saved_data = await self.mapper.insert(data=model_data, db_session=db_session)
-        return BaseModel.model_validate(saved_data)
+        return saved_data
 
     async def save_batch(
-        self, data_list: list[BaseModel], db_session: Optional[AsyncSession] = None
+        self, data_list: list[BaseModel], db_session: AsyncSession | None = None
     ) -> int:
         """Batch insert records"""
         model_list = [self.model(**data.model_dump()) for data in data_list]
@@ -47,7 +49,7 @@ class BaseServiceImpl(
         )
 
     async def save_or_update(
-        self, data: BaseModel, db_session: Optional[AsyncSession] = None
+        self, data: BaseModel, db_session: AsyncSession | None = None
     ) -> bool:
         """Insert or update a record"""
         # Check if data exists (assuming data has id field)
@@ -66,7 +68,7 @@ class BaseServiceImpl(
         return saved_data is not None
 
     async def save_or_update_batch(
-        self, data_list: list[BaseModel], db_session: Optional[AsyncSession] = None
+        self, data_list: list[BaseModel], db_session: AsyncSession | None = None
     ) -> bool:
         """Batch insert or update records"""
         # Separate inserts and updates
@@ -98,20 +100,20 @@ class BaseServiceImpl(
         return True
 
     async def remove_by_id(
-        self, id: IDType, db_session: Optional[AsyncSession] = None
+        self, id: IDType, db_session: AsyncSession | None = None
     ) -> bool:
         """Delete record by ID"""
         count = await self.mapper.delete_by_id(id=id, db_session=db_session)
         return count > 0
 
     async def remove_by_ids(
-        self, ids: list[IDType], db_session: Optional[AsyncSession] = None
+        self, ids: list[IDType], db_session: AsyncSession | None = None
     ) -> bool:
         """Batch delete records by IDs"""
         count = await self.mapper.batch_delete_by_ids(ids=ids, db_session=db_session)
         return count > 0
 
-    async def remove(self, db_session: Optional[AsyncSession] = None, **kwargs) -> bool:
+    async def remove(self, db_session: AsyncSession | None = None, **kwargs) -> bool:
         """Delete records by conditions"""
         # This would need a more complex implementation based on your filter system
         # For now, we'll use a simple approach - get IDs first then delete
@@ -122,7 +124,7 @@ class BaseServiceImpl(
         return False
 
     async def update_by_id(
-        self, data: BaseModel, db_session: Optional[AsyncSession] = None
+        self, data: BaseModel, db_session: AsyncSession | None = None
     ) -> bool:
         """Update record by ID"""
         model_data = self.model(**data.model_dump())
@@ -133,7 +135,7 @@ class BaseServiceImpl(
         self,
         ids: list[IDType],
         data: dict[str, Any],
-        db_session: Optional[AsyncSession] = None,
+        db_session: AsyncSession | None = None,
     ) -> bool:
         """Batch update records by IDs"""
         count = await self.mapper.batch_update_by_ids(
@@ -142,7 +144,7 @@ class BaseServiceImpl(
         return count > 0
 
     async def batch_update(
-        self, data_list: list[BaseModel], db_session: Optional[AsyncSession] = None
+        self, data_list: list[BaseModel], db_session: AsyncSession | None = None
     ) -> bool:
         """Batch update records"""
         model_list = [self.model(**data.model_dump()) for data in data_list]
@@ -152,7 +154,7 @@ class BaseServiceImpl(
         return count > 0
 
     async def update(
-        self, data: BaseModel, db_session: Optional[AsyncSession] = None, **kwargs
+        self, data: BaseModel, db_session: AsyncSession | None = None, **kwargs
     ) -> bool:
         """Update records by conditions"""
         # Get records matching conditions
@@ -181,9 +183,9 @@ class BaseServiceImpl(
     async def get_by_id(
         self,
         id: IDType,
-        fields: Optional[list[str]] = None,
-        db_session: Optional[AsyncSession] = None,
-    ) -> Optional[BaseModel]:
+        fields: list[str] | None = None,
+        db_session: AsyncSession | None = None,
+    ) -> BaseModel | None:
         """Get record by ID"""
         result = await self.mapper.select_by_id(
             id=id, fields=fields, db_session=db_session
@@ -193,8 +195,8 @@ class BaseServiceImpl(
         return None
 
     async def get_one(
-        self, db_session: Optional[AsyncSession] = None, **kwargs
-    ) -> Optional[BaseModel]:
+        self, db_session: AsyncSession | None = None, **kwargs
+    ) -> BaseModel | None:
         """Get one record by conditions"""
         records = await self.list(db_session=db_session, **kwargs)
         return records[0] if records else None
@@ -202,8 +204,8 @@ class BaseServiceImpl(
     async def list_by_ids(
         self,
         ids: list[IDType],
-        fields: Optional[list[str]] = None,
-        db_session: Optional[AsyncSession] = None,
+        fields: list[str] | None = None,
+        db_session: AsyncSession | None = None,
     ) -> list[BaseModel]:
         """Get records by IDs"""
         results = await self.mapper.select_by_ids(
@@ -213,8 +215,8 @@ class BaseServiceImpl(
 
     async def list_all(
         self,
-        fields: Optional[list[str]] = None,
-        db_session: Optional[AsyncSession] = None,
+        fields: list[str] | None = None,
+        db_session: AsyncSession | None = None,
         **kwargs,
     ) -> list[BaseModel]:
         """Get all records with optional filtering"""
@@ -230,7 +232,7 @@ class BaseServiceImpl(
         return [BaseModel.model_validate(record) for record in records]
 
     async def list(
-        self, db_session: Optional[AsyncSession] = None, **kwargs
+        self, db_session: AsyncSession | None = None, **kwargs
     ) -> list[BaseModel]:
         """Get records by conditions"""
         return await self.list_all(db_session=db_session, **kwargs)
@@ -240,10 +242,10 @@ class BaseServiceImpl(
         current: int = 1,
         page_size: int = 100,
         count: bool = True,
-        fields: Optional[list[str]] = None,
-        db_session: Optional[AsyncSession] = None,
+        fields: builtins.list[str] | None = None,
+        db_session: AsyncSession | None = None,
         **kwargs,
-    ) -> tuple[list[BaseModel], int]:
+    ) -> tuple[builtins.list[BaseModel], int]:
         """Paginated query"""
         records, total = await self.mapper.select_by_page(
             current=current,
@@ -260,11 +262,11 @@ class BaseServiceImpl(
         current: int = 1,
         page_size: int = 100,
         count: bool = True,
-        sort_list: Optional[list[SortItem]] = None,
-        fields: Optional[list[str]] = None,
-        db_session: Optional[AsyncSession] = None,
+        sort_list: builtins.list[SortItem] | None = None,
+        fields: builtins.list[str] | None = None,
+        db_session: AsyncSession | None = None,
         **kwargs,
-    ) -> tuple[list[BaseModel], int]:
+    ) -> tuple[builtins.list[BaseModel], int]:
         """Paginated query with ordering"""
         records, total = await self.mapper.select_by_ordered_page(
             current=current,
@@ -277,24 +279,24 @@ class BaseServiceImpl(
         )
         return [BaseModel.model_validate(record) for record in records], total
 
-    async def count(self, db_session: Optional[AsyncSession] = None, **kwargs) -> int:
+    async def count(self, db_session: AsyncSession | None = None, **kwargs) -> int:
         """Count records by conditions"""
         _, total = await self.mapper.select_by_page(
             current=1, page_size=1, count=True, db_session=db_session, **kwargs
         )
         return total
 
-    async def exists(self, db_session: Optional[AsyncSession] = None, **kwargs) -> bool:
+    async def exists(self, db_session: AsyncSession | None = None, **kwargs) -> bool:
         """Check if records exist by conditions"""
         count = await self.count(db_session=db_session, **kwargs)
         return count > 0
 
     async def get_children_tree(
         self,
-        parent_data: list[BaseModel],
+        parent_data: builtins.list[BaseModel],
         max_level: int = 5,
-        db_session: Optional[AsyncSession] = None,
-    ) -> list[BaseModel]:
+        db_session: AsyncSession | None = None,
+    ) -> builtins.list[BaseModel]:
         """Get children tree recursively"""
         results = await self.mapper.get_children_recursively(
             parent_data=parent_data,

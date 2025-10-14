@@ -6,7 +6,7 @@ Copy from https://github.com/sysid/sse-starlette/blob/main/sse_starlette/event.p
 import io
 import json
 import re
-from typing import Any, Optional, Union
+from typing import Any
 
 
 class ServerSentEvent:
@@ -19,13 +19,13 @@ class ServerSentEvent:
 
     def __init__(
         self,
-        data: Optional[Any] = None,
+        data: Any | None = None,
         *,
-        event: Optional[str] = None,
-        id: Optional[str] = None,
-        retry: Optional[int] = None,
-        comment: Optional[str] = None,
-        sep: Optional[str] = None,
+        event: str | None = None,
+        id: str | None = None,
+        retry: int | None = None,
+        comment: str | None = None,
+        sep: str | None = None,
     ) -> None:
         self.data = data
         self.event = event
@@ -71,7 +71,7 @@ class JSONServerSentEvent(ServerSentEvent):
 
     def __init__(
         self,
-        data: Optional[Any] = None,
+        data: Any | None = None,
         *args,
         **kwargs,
     ) -> None:
@@ -90,7 +90,7 @@ class JSONServerSentEvent(ServerSentEvent):
         )
 
 
-def ensure_bytes(data: Union[bytes, dict, ServerSentEvent, Any], sep: str) -> bytes:
+def ensure_bytes(data: bytes | dict | ServerSentEvent | Any, sep: str) -> bytes:
     if isinstance(data, bytes):
         return data
     if isinstance(data, ServerSentEvent):

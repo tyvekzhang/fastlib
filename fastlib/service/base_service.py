@@ -1,8 +1,9 @@
 # SPDX-License-Identifier: MIT
 """Abstract service with common database operations."""
 
+import builtins
 from abc import ABC, abstractmethod
-from typing import Any, Generic, Optional, TypeVar
+from typing import Any, Generic, TypeVar
 
 from pydantic import BaseModel
 from sqlmodel import SQLModel
@@ -19,54 +20,54 @@ class BaseService(Generic[ModelType], ABC):
 
     @abstractmethod
     async def save(
-        self, data: BaseModel, db_session: Optional[AsyncSession] = None
+        self, data: BaseModel, db_session: AsyncSession | None = None
     ) -> BaseModel:
         """Insert a single record"""
         pass
 
     @abstractmethod
     async def save_batch(
-        self, data_list: list[BaseModel], db_session: Optional[AsyncSession] = None
+        self, data_list: list[BaseModel], db_session: AsyncSession | None = None
     ) -> int:
         """Batch insert records"""
         pass
 
     @abstractmethod
     async def save_or_update(
-        self, data: BaseModel, db_session: Optional[AsyncSession] = None
+        self, data: BaseModel, db_session: AsyncSession | None = None
     ) -> bool:
         """Insert or update a record"""
         pass
 
     @abstractmethod
     async def save_or_update_batch(
-        self, data_list: list[BaseModel], db_session: Optional[AsyncSession] = None
+        self, data_list: list[BaseModel], db_session: AsyncSession | None = None
     ) -> bool:
         """Batch insert or update records"""
         pass
 
     @abstractmethod
     async def remove_by_id(
-        self, id: IDType, db_session: Optional[AsyncSession] = None
+        self, id: IDType, db_session: AsyncSession | None = None
     ) -> bool:
         """Delete record by ID"""
         pass
 
     @abstractmethod
     async def remove_by_ids(
-        self, ids: list[IDType], db_session: Optional[AsyncSession] = None
+        self, ids: list[IDType], db_session: AsyncSession | None = None
     ) -> bool:
         """Batch delete records by IDs"""
         pass
 
     @abstractmethod
-    async def remove(self, db_session: Optional[AsyncSession] = None, **kwargs) -> bool:
+    async def remove(self, db_session: AsyncSession | None = None, **kwargs) -> bool:
         """Delete records by conditions"""
         pass
 
     @abstractmethod
     async def update_by_id(
-        self, data: BaseModel, db_session: Optional[AsyncSession] = None
+        self, data: BaseModel, db_session: AsyncSession | None = None
     ) -> bool:
         """Update record by ID"""
         pass
@@ -76,21 +77,21 @@ class BaseService(Generic[ModelType], ABC):
         self,
         ids: list[IDType],
         data: dict[str, Any],
-        db_session: Optional[AsyncSession] = None,
+        db_session: AsyncSession | None = None,
     ) -> bool:
         """Batch update records by IDs"""
         pass
 
     @abstractmethod
     async def batch_update(
-        self, data_list: list[BaseModel], db_session: Optional[AsyncSession] = None
+        self, data_list: list[BaseModel], db_session: AsyncSession | None = None
     ) -> bool:
         """Batch update records"""
         pass
 
     @abstractmethod
     async def update(
-        self, data: BaseModel, db_session: Optional[AsyncSession] = None, **kwargs
+        self, data: BaseModel, db_session: AsyncSession | None = None, **kwargs
     ) -> bool:
         """Update records by conditions"""
         pass
@@ -99,16 +100,16 @@ class BaseService(Generic[ModelType], ABC):
     async def get_by_id(
         self,
         id: IDType,
-        fields: Optional[list[str]] = None,
-        db_session: Optional[AsyncSession] = None,
-    ) -> Optional[BaseModel]:
+        fields: list[str] | None = None,
+        db_session: AsyncSession | None = None,
+    ) -> BaseModel | None:
         """Get record by ID"""
         pass
 
     @abstractmethod
     async def get_one(
-        self, db_session: Optional[AsyncSession] = None, **kwargs
-    ) -> Optional[BaseModel]:
+        self, db_session: AsyncSession | None = None, **kwargs
+    ) -> BaseModel | None:
         """Get one record by conditions"""
         pass
 
@@ -116,8 +117,8 @@ class BaseService(Generic[ModelType], ABC):
     async def list_by_ids(
         self,
         ids: list[IDType],
-        fields: Optional[list[str]] = None,
-        db_session: Optional[AsyncSession] = None,
+        fields: list[str] | None = None,
+        db_session: AsyncSession | None = None,
     ) -> list[BaseModel]:
         """Get records by IDs"""
         pass
@@ -125,8 +126,8 @@ class BaseService(Generic[ModelType], ABC):
     @abstractmethod
     async def list_all(
         self,
-        fields: Optional[list[str]] = None,
-        db_session: Optional[AsyncSession] = None,
+        fields: list[str] | None = None,
+        db_session: AsyncSession | None = None,
         **kwargs,
     ) -> list[BaseModel]:
         """Get all records with optional filtering"""
@@ -134,7 +135,7 @@ class BaseService(Generic[ModelType], ABC):
 
     @abstractmethod
     async def list(
-        self, db_session: Optional[AsyncSession] = None, **kwargs
+        self, db_session: AsyncSession | None = None, **kwargs
     ) -> list[BaseModel]:
         """Get records by conditions"""
         pass
@@ -145,10 +146,10 @@ class BaseService(Generic[ModelType], ABC):
         current: int = 1,
         page_size: int = 100,
         count: bool = True,
-        fields: Optional[list[str]] = None,
-        db_session: Optional[AsyncSession] = None,
+        fields: builtins.list[str] | None = None,
+        db_session: AsyncSession | None = None,
         **kwargs,
-    ) -> tuple[list[BaseModel], int]:
+    ) -> tuple[builtins.list[BaseModel], int]:
         """Paginated query"""
         pass
 
@@ -158,30 +159,30 @@ class BaseService(Generic[ModelType], ABC):
         current: int = 1,
         page_size: int = 100,
         count: bool = True,
-        sort_list: Optional[list[SortItem]] = None,
-        fields: Optional[list[str]] = None,
-        db_session: Optional[AsyncSession] = None,
+        sort_list: builtins.list[SortItem] | None = None,
+        fields: builtins.list[str] | None = None,
+        db_session: AsyncSession | None = None,
         **kwargs,
-    ) -> tuple[list[BaseModel], int]:
+    ) -> tuple[builtins.list[BaseModel], int]:
         """Paginated query with ordering"""
         pass
 
     @abstractmethod
-    async def count(self, db_session: Optional[AsyncSession] = None, **kwargs) -> int:
+    async def count(self, db_session: AsyncSession | None = None, **kwargs) -> int:
         """Count records by conditions"""
         pass
 
     @abstractmethod
-    async def exists(self, db_session: Optional[AsyncSession] = None, **kwargs) -> bool:
+    async def exists(self, db_session: AsyncSession | None = None, **kwargs) -> bool:
         """Check if records exist by conditions"""
         pass
 
     @abstractmethod
     async def get_children_tree(
         self,
-        parent_data: list[BaseModel],
+        parent_data: builtins.list[BaseModel],
         max_level: int = 5,
-        db_session: Optional[AsyncSession] = None,
-    ) -> list[BaseModel]:
+        db_session: AsyncSession | None = None,
+    ) -> builtins.list[BaseModel]:
         """Get children tree recursively"""
         pass

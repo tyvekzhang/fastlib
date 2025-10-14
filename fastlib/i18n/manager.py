@@ -5,8 +5,8 @@ Internationalization context manager
 
 import contextvars
 import functools
-from collections.abc import Awaitable
-from typing import Any, Callable, TypeVar
+from collections.abc import Awaitable, Callable
+from typing import Any, TypeVar
 
 from fastlib.i18n.types import Language
 

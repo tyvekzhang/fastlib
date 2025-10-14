@@ -3,7 +3,7 @@
 
 import configparser
 from pathlib import Path
-from typing import Any, NamedTuple, Optional
+from typing import Any, NamedTuple
 from urllib.parse import urlparse
 
 from loguru import logger
@@ -36,8 +36,8 @@ class ProjectInfo:
         self,
         name: str,
         version: str,
-        description: Optional[str] = None,
-        authors: Optional[list[str]] = None,
+        description: str | None = None,
+        authors: list[str] | None = None,
     ):
         self.name = name
         self.version = version

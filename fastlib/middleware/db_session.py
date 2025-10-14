@@ -2,7 +2,6 @@
 """Session proxy used in the project"""
 
 from contextvars import ContextVar
-from typing import Optional, Union
 
 from sqlalchemy.engine import Engine
 from sqlalchemy.engine.url import URL
@@ -23,8 +22,8 @@ except ImportError:
 
 def create_middleware_and_session_proxy():
     """Create and return SQLAlchemy middleware and session proxy classes."""
-    _Session: Optional[async_sessionmaker] = None
-    _session: ContextVar[Optional[AsyncSession]] = ContextVar("_session", default=None)
+    _Session: async_sessionmaker | None = None
+    _session: ContextVar[AsyncSession | None] = ContextVar("_session", default=None)
 
     class SQLAlchemyMiddleware(BaseHTTPMiddleware):
         """Middleware for managing SQLAlchemy sessions in FastAPI applications."""
@@ -32,8 +31,8 @@ def create_middleware_and_session_proxy():
         def __init__(
             self,
             app: ASGIApp,
-            db_url: Optional[Union[str, URL]] = None,
-            custom_engine: Optional[Engine] = None,
+            db_url: str | URL | None = None,
+            custom_engine: Engine | None = None,
             engine_args: dict = None,
             session_args: dict = None,
             commit_on_exit: bool = True,

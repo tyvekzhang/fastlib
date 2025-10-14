@@ -3,8 +3,6 @@
 Internationalization utilities
 """
 
-from typing import Optional
-
 from .manager import I18nContext
 from .messages import get_message
 from .types import Language
@@ -21,12 +19,12 @@ LANGUAGE_MAPPING = {
 }
 
 
-def _resolve_language(language: Optional[Language]) -> Language:
+def _resolve_language(language: Language | None) -> Language:
     """Return given language or current context default"""
     return language or I18nContext.get_language()
 
 
-def parse_language(language_str: Optional[str]) -> Language:
+def parse_language(language_str: str | None) -> Language:
     """Parse string like 'zh-CN', 'en-US' to Language enum"""
     if not language_str:
         return DEFAULT_LANGUAGE
@@ -36,7 +34,7 @@ def parse_language(language_str: Optional[str]) -> Language:
 
 
 def get_localized_message(
-    category: str, key: str, language: Optional[Language] = None
+    category: str, key: str, language: Language | None = None
 ) -> str:
     """Get localized message by category ('error', 'success', 'business')"""
     lang = _resolve_language(language)

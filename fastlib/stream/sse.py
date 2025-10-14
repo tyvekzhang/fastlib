@@ -4,13 +4,17 @@ Copy from https://github.com/sysid/sse-starlette/blob/main/sse_starlette/sse.py
 """
 
 import contextvars
-from collections.abc import AsyncIterable, Awaitable, Coroutine, Iterator, Mapping
-from datetime import datetime, timezone
+from collections.abc import (
+    AsyncIterable,
+    Awaitable,
+    Callable,
+    Coroutine,
+    Iterator,
+    Mapping,
+)
+from datetime import UTC, datetime
 from typing import (
     Any,
-    Callable,
-    Optional,
-    Union,
 )
 
 import anyio
@@ -24,7 +28,7 @@ from starlette.types import Message, Receive, Scope, Send
 from fastlib.stream.event import ServerSentEvent, ensure_bytes
 
 # Context variable for exit events per event loop
-_exit_event_context: contextvars.ContextVar[Optional[anyio.Event]] = (
+_exit_event_context: contextvars.ContextVar[anyio.Event | None] = (
     contextvars.ContextVar("exit_event", default=None)
 )
 
@@ -37,7 +41,7 @@ class AppStatus:
     """Helper to capture a shutdown signal from Uvicorn so we can gracefully terminate SSE streams."""
 
     should_exit = False
-    original_handler: Optional[Callable] = None
+    original_handler: Callable | None = None
 
     @staticmethod
     def handle_exit(*args, **kwargs):
@@ -72,10 +76,10 @@ except ImportError:
         "Uvicorn not installed. Graceful shutdown on server termination disabled."
     )
 
-Content = Union[str, bytes, dict, ServerSentEvent, Any]
+Content = str | bytes | dict | ServerSentEvent | Any
 SyncContentStream = Iterator[Content]
 AsyncContentStream = AsyncIterable[Content]
-ContentStream = Union[AsyncContentStream, SyncContentStream]
+ContentStream = AsyncContentStream | SyncContentStream
 
 
 class EventSourceResponse(Response):
@@ -90,19 +94,17 @@ class EventSourceResponse(Response):
         self,
         content: ContentStream,
         status_code: int = 200,
-        headers: Optional[Mapping[str, str]] = None,
+        headers: Mapping[str, str] | None = None,
         media_type: str = "text/event-stream",
-        background: Optional[BackgroundTask] = None,
-        ping: Optional[int] = None,
-        sep: Optional[str] = None,
-        ping_message_factory: Optional[Callable[[], ServerSentEvent]] = None,
-        data_sender_callable: Optional[
-            Callable[[], Coroutine[None, None, None]]
-        ] = None,
-        send_timeout: Optional[float] = None,
-        client_close_handler_callable: Optional[
-            Callable[[Message], Awaitable[None]]
-        ] = None,
+        background: BackgroundTask | None = None,
+        ping: int | None = None,
+        sep: str | None = None,
+        ping_message_factory: Callable[[], ServerSentEvent] | None = None,
+        data_sender_callable: Callable[[], Coroutine[None, None, None]] | None = None,
+        send_timeout: float | None = None,
+        client_close_handler_callable: (
+            Callable[[Message], Awaitable[None]] | None
+        ) = None,
     ) -> None:
         # Validate separator
         if sep not in (None, "\r\n", "\r", "\n"):
@@ -148,12 +150,12 @@ class EventSourceResponse(Response):
         self._send_lock = anyio.Lock()
 
     @property
-    def ping_interval(self) -> Union[int, float]:
+    def ping_interval(self) -> int | float:
         return self._ping_interval
 
     @ping_interval.setter
-    def ping_interval(self, value: Union[int, float]) -> None:
-        if not isinstance(value, (int, float)):
+    def ping_interval(self, value: int | float) -> None:
+        if not isinstance(value, int | float):
             raise TypeError("ping interval must be int")
         if value < 0:
             raise ValueError("ping interval must be greater than 0")
@@ -227,7 +229,7 @@ class EventSourceResponse(Response):
                 self.ping_message_factory()
                 if self.ping_message_factory
                 else ServerSentEvent(
-                    comment=f"ping - {datetime.now(timezone.utc)}", sep=self.sep
+                    comment=f"ping - {datetime.now(UTC)}", sep=self.sep
                 )
             )
             ping_bytes = ensure_bytes(sse_ping, self.sep)

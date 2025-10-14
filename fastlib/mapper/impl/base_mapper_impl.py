@@ -2,13 +2,13 @@
 """Sqlmodel impl that handle database operation"""
 
 from collections.abc import Sequence
-from typing import Any, Generic, Optional, TypeVar, Union
+from typing import Any, Generic, TypeVar
 
 from pydantic import BaseModel
 from sqlmodel import SQLModel, and_, delete, func, insert, select, update
 from sqlmodel.ext.asyncio.session import AsyncSession
 
-from fastlib.constant import FilterOperators, constant
+from fastlib.constants import MAX_PAGE_SIZE, PARENT_ID, ROOT_PARENT_ID, FilterOperators
 from fastlib.enums import SortEnum
 from fastlib.mapper.base_mapper import BaseMapper
 from fastlib.middleware.db_session import db
@@ -31,8 +31,8 @@ class SqlModelMapper(BaseMapper, Generic[ModelType]):
         return list(schema.model_fields.keys())
 
     def _resolve_fields(
-        self, fields: Optional[list[str]], schema: Optional[type[SchemaType]]
-    ) -> Optional[list[str]]:
+        self, fields: list[str] | None, schema: type[SchemaType] | None
+    ) -> list[str] | None:
         """
         Resolve fields parameter: if schema is provided but fields is None, use schema fields.
         """
@@ -46,7 +46,7 @@ class SqlModelMapper(BaseMapper, Generic[ModelType]):
         self,
         *,
         data: ModelType,
-        db_session: Optional[AsyncSession] = None,
+        db_session: AsyncSession | None = None,
     ) -> ModelType:
         """
         Inserts a single data into the database.
@@ -61,7 +61,7 @@ class SqlModelMapper(BaseMapper, Generic[ModelType]):
         self,
         *,
         data_list: list[ModelType],
-        db_session: Optional[AsyncSession] = None,
+        db_session: AsyncSession | None = None,
     ) -> int:
         """
         Insert data list into the database in a single operation..
@@ -78,10 +78,10 @@ class SqlModelMapper(BaseMapper, Generic[ModelType]):
         self,
         *,
         id: IDType,
-        fields: Optional[list[str]] = None,
-        schema: Optional[type[SchemaType]] = None,
-        db_session: Optional[AsyncSession] = None,
-    ) -> Optional[Union[ModelType, SchemaType]]:
+        fields: list[str] | None = None,
+        schema: type[SchemaType] | None = None,
+        db_session: AsyncSession | None = None,
+    ) -> ModelType | SchemaType | None:
         """
         Select a single record by its ID.
 
@@ -110,7 +110,7 @@ class SqlModelMapper(BaseMapper, Generic[ModelType]):
         if result and schema:
             if resolved_fields:
                 # Convert tuple result to dict for schema conversion
-                result_dict = dict(zip(resolved_fields, result))
+                result_dict = dict(zip(resolved_fields, result, strict=False))
                 return schema.model_validate(result_dict)
             else:
                 return schema.model_validate(result)
@@ -121,10 +121,10 @@ class SqlModelMapper(BaseMapper, Generic[ModelType]):
         self,
         *,
         ids: list[IDType],
-        fields: Optional[list[str]] = None,
-        schema: Optional[type[SchemaType]] = None,
-        db_session: Optional[AsyncSession] = None,
-    ) -> list[Union[ModelType, SchemaType]]:
+        fields: list[str] | None = None,
+        schema: type[SchemaType] | None = None,
+        db_session: AsyncSession | None = None,
+    ) -> list[ModelType | SchemaType]:
         """
         Select record list by their IDs.
 
@@ -155,7 +155,7 @@ class SqlModelMapper(BaseMapper, Generic[ModelType]):
             for result in results:
                 if resolved_fields:
                     # Convert tuple result to dict for schema conversion
-                    result_dict = dict(zip(resolved_fields, result))
+                    result_dict = dict(zip(resolved_fields, result, strict=False))
                     converted_results.append(schema.model_validate(result_dict))
                 else:
                     converted_results.append(schema.model_validate(result))
@@ -165,8 +165,8 @@ class SqlModelMapper(BaseMapper, Generic[ModelType]):
 
     async def _build_query_with_fields(
         self,
-        fields: Optional[list[str]] = None,
-        schema: Optional[type[SchemaType]] = None,
+        fields: list[str] | None = None,
+        schema: type[SchemaType] | None = None,
         **kwargs,
     ) -> Any:
         """
@@ -214,9 +214,9 @@ class SqlModelMapper(BaseMapper, Generic[ModelType]):
     async def _convert_results(
         self,
         results: list,
-        fields: Optional[list[str]] = None,
-        schema: Optional[type[SchemaType]] = None,
-    ) -> list[Union[ModelType, SchemaType]]:
+        fields: list[str] | None = None,
+        schema: type[SchemaType] | None = None,
+    ) -> list[ModelType | SchemaType]:
         """
         Convert query results to specified schema.
         """
@@ -230,7 +230,7 @@ class SqlModelMapper(BaseMapper, Generic[ModelType]):
         for result in results:
             if resolved_fields:
                 # Convert tuple result to dict for schema conversion
-                result_dict = dict(zip(resolved_fields, result))
+                result_dict = dict(zip(resolved_fields, result, strict=False))
                 converted_results.append(schema.model_validate(result_dict))
             else:
                 converted_results.append(schema.model_validate(result))
@@ -242,11 +242,11 @@ class SqlModelMapper(BaseMapper, Generic[ModelType]):
         current: int = 1,
         page_size: int = 100,
         count: bool = True,
-        fields: Optional[list[str]] = None,
-        schema: Optional[type[SchemaType]] = None,
-        db_session: Optional[AsyncSession] = None,
+        fields: list[str] | None = None,
+        schema: type[SchemaType] | None = None,
+        db_session: AsyncSession | None = None,
         **kwargs,
-    ) -> tuple[list[Union[ModelType, SchemaType]], int]:
+    ) -> tuple[list[ModelType | SchemaType], int]:
         """
         Select a list of record, with optional filtering, pagination, and ordering.
 
@@ -293,11 +293,11 @@ class SqlModelMapper(BaseMapper, Generic[ModelType]):
         page_size: int = 100,
         count: bool = True,
         sort_list: list[SortItem] = None,
-        fields: Optional[list[str]] = None,
-        schema: Optional[type[SchemaType]] = None,
-        db_session: Optional[AsyncSession] = None,
+        fields: list[str] | None = None,
+        schema: type[SchemaType] | None = None,
+        db_session: AsyncSession | None = None,
         **kwargs,
-    ) -> tuple[list[Union[ModelType, SchemaType]], int]:
+    ) -> tuple[list[ModelType | SchemaType], int]:
         """
         Select a list of data_list, with optional filtering, pagination, and ordering.
 
@@ -353,14 +353,14 @@ class SqlModelMapper(BaseMapper, Generic[ModelType]):
         self,
         *,
         current: int = 1,
-        page_size: int = constant.MAX_PAGE_SIZE,
+        page_size: int = MAX_PAGE_SIZE,
         count: bool = True,
         sort_list: list[SortItem] = None,
-        fields: Optional[list[str]] = None,
-        schema: Optional[type[SchemaType]] = None,
-        db_session: Optional[AsyncSession] = None,
+        fields: list[str] | None = None,
+        schema: type[SchemaType] | None = None,
+        db_session: AsyncSession | None = None,
         **kwargs,
-    ) -> tuple[list[Union[ModelType, SchemaType]], int]:
+    ) -> tuple[list[ModelType | SchemaType], int]:
         """
         Select record list with pagination and sorting by parent ID.
 
@@ -382,12 +382,10 @@ class SqlModelMapper(BaseMapper, Generic[ModelType]):
         )
 
         # Apply parent ID filter
-        if hasattr(self.model, constant.PARENT_ID) and (
-            constant.PARENT_ID not in kwargs or kwargs[constant.PARENT_ID] is None
+        if hasattr(self.model, PARENT_ID) and (
+            PARENT_ID not in kwargs or kwargs[PARENT_ID] is None
         ):
-            query = query.filter(
-                getattr(self.model, constant.PARENT_ID) == constant.ROOT_PARENT_ID
-            )
+            query = query.filter(getattr(self.model, PARENT_ID) == ROOT_PARENT_ID)
 
         # Get total count if requested
         total_count = 0
@@ -395,8 +393,8 @@ class SqlModelMapper(BaseMapper, Generic[ModelType]):
             count_query = select(func.count()).select_from(query.subquery())
             total_count_result = await db_session.exec(count_query)
             total_count: int = total_count_result.all()[0]
-            if total_count > constant.MAX_PAGE_SIZE:
-                raise ValueError(f"Total count exceeds {constant.MAX_PAGE_SIZE}")
+            if total_count > MAX_PAGE_SIZE:
+                raise ValueError(f"Total count exceeds {MAX_PAGE_SIZE}")
 
         # Apply sorting
         if sort_list:
@@ -423,7 +421,7 @@ class SqlModelMapper(BaseMapper, Generic[ModelType]):
         return converted_list, total_count
 
     async def update_by_id(
-        self, *, data: ModelType, db_session: Optional[AsyncSession] = None
+        self, *, data: ModelType, db_session: AsyncSession | None = None
     ) -> int:
         """
         Update a single data by its ID.
@@ -439,7 +437,7 @@ class SqlModelMapper(BaseMapper, Generic[ModelType]):
         self,
         *,
         items: Sequence[dict[str, Any]],
-        db_session: Optional[AsyncSession] = None,
+        db_session: AsyncSession | None = None,
     ) -> int:
         """
         Update multiple records with possibly different values.
@@ -484,7 +482,7 @@ class SqlModelMapper(BaseMapper, Generic[ModelType]):
         *,
         ids: list[IDType],
         data: dict[str, Any],
-        db_session: Optional[AsyncSession] = None,
+        db_session: AsyncSession | None = None,
     ) -> int:
         """
         Update multiple record by their IDs.
@@ -497,7 +495,7 @@ class SqlModelMapper(BaseMapper, Generic[ModelType]):
         return exec_response.rowcount
 
     async def delete_by_id(
-        self, *, id: IDType, db_session: Optional[AsyncSession] = None
+        self, *, id: IDType, db_session: AsyncSession | None = None
     ) -> int:
         """
         Delete a single data by its ID.
@@ -508,7 +506,7 @@ class SqlModelMapper(BaseMapper, Generic[ModelType]):
         return exec_response.rowcount
 
     async def batch_delete_by_ids(
-        self, *, ids: list[IDType], db_session: Optional[AsyncSession] = None
+        self, *, ids: list[IDType], db_session: AsyncSession | None = None
     ) -> int:
         """
         Delete record list by their IDs.
@@ -525,7 +523,7 @@ class SqlModelMapper(BaseMapper, Generic[ModelType]):
         schema_class: type[SchemaType],
         level: int = 1,
         max_level: int = 5,
-        db_session: Optional[AsyncSession] = None,
+        db_session: AsyncSession | None = None,
     ) -> list[SchemaType]:
         """
         Recursively fetch children of given parent items up to 5 levels.

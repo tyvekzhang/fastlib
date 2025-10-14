@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: MIT
 """Standardized HTTP response model for API implementations."""
 
-from typing import Any, Generic, Optional, TypeVar, Union, overload
+from typing import Any, Generic, TypeVar, overload
 
 from pydantic import BaseModel, Field, model_serializer
 
@@ -40,7 +40,7 @@ class HttpResponse(BaseModel, Generic[T]):
 
     code: int = DEFAULT_SUCCESS_CODE
     message: str = DEFAULT_SUCCESS_MSG
-    data: Optional[T] = None
+    data: T | None = None
 
     @model_serializer
     def serialize_model(self) -> dict:
@@ -52,7 +52,7 @@ class HttpResponse(BaseModel, Generic[T]):
 
     @staticmethod
     def success(
-        data: Optional[T] = None,
+        data: T | None = None,
         code: int = DEFAULT_SUCCESS_CODE,
         message: str = DEFAULT_SUCCESS_MSG,
     ) -> "HttpResponse[T]":
@@ -73,7 +73,7 @@ class HttpResponse(BaseModel, Generic[T]):
     def fail(
         message: str = str,
         code: int = DEFAULT_FAIL_CODE,
-        data: Optional[Any] = None,
+        data: Any | None = None,
     ) -> "HttpResponse[Any]":
         """Constructs a standardized error response.
 
@@ -91,8 +91,8 @@ class HttpResponse(BaseModel, Generic[T]):
     @staticmethod
     @overload
     def fail(
-        error: Union[ErrorDetail, tuple[int, str]],  # Supports multiple error types
-        extra_msg: Optional[str] = None,
+        error: ErrorDetail | tuple[int, str],  # Supports multiple error types
+        extra_msg: str | None = None,
     ) -> "HttpResponse[Any]":
         """Constructs an error response from various error type inputs.
 

@@ -4,7 +4,7 @@ Log configuration and logging utility for the application.
 """
 
 from pathlib import Path
-from typing import Literal, Optional
+from typing import Literal
 
 from fastlib.config.base import BaseConfig
 from fastlib.config.manager import config_class
@@ -29,7 +29,7 @@ class LogConfig(BaseConfig):
         error_log_rotation: str = "1 day",
         error_log_retention: str = "90 days",
         enable_async: bool = True,
-        max_file_size: Optional[str] = "10 MB",
+        max_file_size: str | None = "10 MB",
         time_format: str = "YYYY-MM-DD",
         **kwargs,
     ):

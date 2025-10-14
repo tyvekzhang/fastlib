@@ -4,7 +4,7 @@
 import textwrap
 import traceback
 from http import HTTPStatus
-from typing import Any, Optional
+from typing import Any
 
 from fastapi import Request
 from fastapi.exception_handlers import http_exception_handler
@@ -95,7 +95,7 @@ def build_error_response(
     exc: Exception,
     request: Request,
     status_code: int,
-    headers: Optional[dict[str, str]] = None,
+    headers: dict[str, str] | None = None,
 ) -> Response:
     """
     Build standardized error response.

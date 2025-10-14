@@ -2,7 +2,7 @@
 """Configuration loading and management with dynamic registry support."""
 
 import os
-from typing import Any, Optional
+from typing import Any
 
 from fastlib import constants as constant
 from fastlib.config import utils as config_util
@@ -38,7 +38,7 @@ def config_class(name: str):
 class ConfigManager:
     """Global configuration manager with static methods and dynamic registry support."""
 
-    _global_config_dict: Optional[dict[str, Any]] = None
+    _global_config_dict: dict[str, Any] | None = None
     _config_instances: dict[str, BaseConfig] = {}
     _initialized: bool = False
 
@@ -63,9 +63,9 @@ class ConfigManager:
 
     @staticmethod
     def initialize_global_config(
-        env: Optional[str] = None,
-        config_file: Optional[str] = None,
-        custom_configs: Optional[dict[str, Any]] = None,
+        env: str | None = None,
+        config_file: str | None = None,
+        custom_configs: dict[str, Any] | None = None,
     ) -> None:
         """
         Initialize global configuration.
@@ -136,7 +136,7 @@ class ConfigManager:
                 ) from e
 
     @staticmethod
-    def get_config_instance(config_name: str) -> Optional[BaseConfig]:
+    def get_config_instance(config_name: str) -> BaseConfig | None:
         """
         Get a specific configuration instance.
 
@@ -205,7 +205,7 @@ class ConfigManager:
         return ConfigManager._initialized
 
     @staticmethod
-    def get_config_dict() -> Optional[dict[str, Any]]:
+    def get_config_dict() -> dict[str, Any] | None:
         """
         Get the raw configuration dictionary.
 

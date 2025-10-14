@@ -5,7 +5,6 @@ import base64
 import hashlib
 import hmac
 import os
-from typing import Optional, Union
 
 try:
     from cryptography.fernet import Fernet
@@ -21,7 +20,7 @@ except ImportError:
 class SymmetricEncryption:
     """Symmetric encryption/decryption using Fernet (AES 128)."""
 
-    def __init__(self, key: Optional[bytes] = None) -> None:
+    def __init__(self, key: bytes | None = None) -> None:
         """
         Initialize symmetric encryption with a key.
 
@@ -44,7 +43,7 @@ class SymmetricEncryption:
 
     @classmethod
     def from_password(
-        cls, password: str, salt: Optional[bytes] = None
+        cls, password: str, salt: bytes | None = None
     ) -> "SymmetricEncryption":
         """
         Create encryption instance from password using PBKDF2.
@@ -80,7 +79,7 @@ class SymmetricEncryption:
         """Get the encryption key."""
         return self._key
 
-    def encrypt(self, plaintext: Union[str, bytes]) -> bytes:
+    def encrypt(self, plaintext: str | bytes) -> bytes:
         """
         Encrypt plaintext data.
 
@@ -140,9 +139,7 @@ class SymmetricEncryption:
 class HMACSigner:
     """HMAC-based message signing and verification."""
 
-    def __init__(
-        self, secret_key: Union[str, bytes], algorithm: str = "sha256"
-    ) -> None:
+    def __init__(self, secret_key: str | bytes, algorithm: str = "sha256") -> None:
         """
         Initialize HMAC signer.
 
@@ -165,7 +162,7 @@ class HMACSigner:
 
         self._hash_func = algorithm_map[algorithm]
 
-    def sign(self, message: Union[str, bytes]) -> str:
+    def sign(self, message: str | bytes) -> str:
         """
         Create HMAC signature for message.
 
@@ -182,7 +179,7 @@ class HMACSigner:
 
         return base64.b64encode(signature).decode("utf-8")
 
-    def verify(self, message: Union[str, bytes], signature: str) -> bool:
+    def verify(self, message: str | bytes, signature: str) -> bool:
         """
         Verify HMAC signature.
 
@@ -234,7 +231,7 @@ class RSASigner:
     """RSA-based digital signing and verification."""
 
     def __init__(
-        self, private_key: Optional[bytes] = None, public_key: Optional[bytes] = None
+        self, private_key: bytes | None = None, public_key: bytes | None = None
     ) -> None:
         """
         Initialize RSA signer.
@@ -296,7 +293,7 @@ class RSASigner:
 
         return private_pem, public_pem
 
-    def sign(self, message: Union[str, bytes]) -> str:
+    def sign(self, message: str | bytes) -> str:
         """
         Create RSA signature for message.
 
@@ -325,7 +322,7 @@ class RSASigner:
 
         return base64.b64encode(signature).decode("utf-8")
 
-    def verify(self, message: Union[str, bytes], signature: str) -> bool:
+    def verify(self, message: str | bytes, signature: str) -> bool:
         """
         Verify RSA signature.
 
@@ -363,7 +360,7 @@ class Ed25519Signer:
     """Ed25519 elliptic curve digital signing and verification."""
 
     def __init__(
-        self, private_key: Optional[bytes] = None, public_key: Optional[bytes] = None
+        self, private_key: bytes | None = None, public_key: bytes | None = None
     ) -> None:
         """
         Initialize Ed25519 signer.
@@ -499,7 +496,7 @@ class Ed25519Signer:
         )
         return public_bytes
 
-    def sign(self, message: Union[str, bytes]) -> str:
+    def sign(self, message: str | bytes) -> str:
         """
         Create Ed25519 signature for message.
 
@@ -523,7 +520,7 @@ class Ed25519Signer:
 
         return base64.b64encode(signature).decode("utf-8")
 
-    def verify(self, message: Union[str, bytes], signature: str) -> bool:
+    def verify(self, message: str | bytes, signature: str) -> bool:
         """
         Verify Ed25519 signature.
 
@@ -552,7 +549,7 @@ class Ed25519Signer:
         except Exception:
             return False
 
-    def sign_detached(self, message: Union[str, bytes]) -> bytes:
+    def sign_detached(self, message: str | bytes) -> bytes:
         """
         Create detached Ed25519 signature (raw bytes).
 
@@ -573,7 +570,7 @@ class Ed25519Signer:
 
         return self._private_key.sign(message)
 
-    def verify_detached(self, message: Union[str, bytes], signature: bytes) -> bool:
+    def verify_detached(self, message: str | bytes, signature: bytes) -> bool:
         """
         Verify detached Ed25519 signature.
 
@@ -614,7 +611,7 @@ def generate_random_key(length: int = 32) -> str:
     return base64.b64encode(os.urandom(length)).decode("utf-8")
 
 
-def hash_password(password: str, salt: Optional[str] = None) -> tuple[str, str]:
+def hash_password(password: str, salt: str | None = None) -> tuple[str, str]:
     """
     Hash password using PBKDF2 with SHA256.
 
@@ -672,7 +669,7 @@ def verify_password(password: str, hashed_password: str, salt: str) -> bool:
         return False
 
 
-def create_symmetric_encryption(key: Optional[bytes] = None) -> SymmetricEncryption:
+def create_symmetric_encryption(key: bytes | None = None) -> SymmetricEncryption:
     """
     Create a symmetric encryption instance.
 
@@ -692,9 +689,7 @@ def create_symmetric_encryption(key: Optional[bytes] = None) -> SymmetricEncrypt
     return SymmetricEncryption(key)
 
 
-def encrypt_data(
-    data: Union[str, bytes], key: Optional[bytes] = None
-) -> tuple[bytes, bytes]:
+def encrypt_data(data: str | bytes, key: bytes | None = None) -> tuple[bytes, bytes]:
     """
     Encrypt data using symmetric encryption.
 

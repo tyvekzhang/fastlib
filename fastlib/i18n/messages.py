@@ -3,7 +3,6 @@
 
 import json
 from pathlib import Path
-from typing import Optional, Union
 
 from fastlib.constants import RESOURCE_DIR
 from fastlib.i18n.types import Language
@@ -17,7 +16,7 @@ TRANSLATIONS = {
 }
 
 
-def load_translations(base_dirs: Union[Path, list[Path], None] = None):
+def load_translations(base_dirs: Path | list[Path] | None = None):
     """Load translation files from specified directories.
 
     Args:
@@ -61,9 +60,7 @@ def load_translations(base_dirs: Union[Path, list[Path], None] = None):
                         TRANSLATIONS[lang.value][namespace] = translations_data
 
 
-def get_message(
-    message_type: str, key: str, language: Optional[Language] = None
-) -> str:
+def get_message(message_type: str, key: str, language: Language | None = None) -> str:
     """Get translated message for given type, key and language.
 
     Args:
@@ -80,7 +77,6 @@ def get_message(
     # Try to get message from requested language
     lang_dict = TRANSLATIONS.get(language.value, {})
     msg = lang_dict.get(message_type, {}).get(key)
-    print(f"lang_dict: {lang_dict}")
     if msg:
         return msg
 

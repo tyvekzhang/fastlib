@@ -5,7 +5,6 @@
 import io
 from contextlib import contextmanager
 from datetime import datetime
-from typing import Optional
 
 import pandas as pd
 from loguru import logger
@@ -30,7 +29,7 @@ class ExcelExporter:
         self,
         schema: type[BaseModel],
         file_name: str,
-        sheet_name: Optional[str] = None,
+        sheet_name: str | None = None,
         include_timestamp: bool = True,
     ):
         self.schema = schema
@@ -47,7 +46,7 @@ class ExcelExporter:
         return f"{self.file_name}.xlsx"
 
     def _prepare_dataframe(
-        self, data_list: Optional[list[BaseModel]] = None
+        self, data_list: list[BaseModel] | None = None
     ) -> pd.DataFrame:
         """Convert Pydantic models to DataFrame."""
         if not data_list:
@@ -93,7 +92,7 @@ class ExcelExporter:
             writer.close()
 
     async def export(
-        self, data_list: Optional[list[BaseModel]] = None
+        self, data_list: list[BaseModel] | None = None
     ) -> StreamingResponse:
         """Export data to Excel file."""
         filename = self._generate_filename()

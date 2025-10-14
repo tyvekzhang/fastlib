@@ -5,7 +5,7 @@ import json
 import threading
 import time
 from contextlib import asynccontextmanager
-from typing import Any, Optional
+from typing import Any
 
 import diskcache
 
@@ -28,7 +28,7 @@ class PageCache(Cache):
         self,
         key: str,
         value: Any,
-        ex: Optional[int] = None,
+        ex: int | None = None,
         nx: bool = False,  # only set if not exists
         xx: bool = False,  # only set if exists
     ) -> bool:
@@ -38,7 +38,7 @@ class PageCache(Cache):
             return False
         return self.cache.set(key, value, expire=ex)
 
-    async def get(self, key: str) -> Optional[Any]:
+    async def get(self, key: str) -> Any | None:
         return self.cache.get(key, None)
 
     async def delete(self, *keys: str) -> int:
@@ -86,7 +86,7 @@ class PageCache(Cache):
         self.cache.set(name, data)
         return 1
 
-    async def hget(self, name: str, key: str) -> Optional[Any]:
+    async def hget(self, name: str, key: str) -> Any | None:
         data = self.cache.get(name, {})
         return data.get(key) if isinstance(data, dict) else None
 
@@ -136,7 +136,7 @@ class PageCache(Cache):
         self._set_list(name, lst)
         return len(lst)
 
-    async def lpop(self, name: str) -> Optional[Any]:
+    async def lpop(self, name: str) -> Any | None:
         lst = self._get_list(name)
         if not lst:
             return None
@@ -144,7 +144,7 @@ class PageCache(Cache):
         self._set_list(name, lst)
         return val
 
-    async def rpop(self, name: str) -> Optional[Any]:
+    async def rpop(self, name: str) -> Any | None:
         lst = self._get_list(name)
         if not lst:
             return None

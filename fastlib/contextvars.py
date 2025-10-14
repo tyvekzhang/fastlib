@@ -6,12 +6,12 @@ the current authenticated user's ID throughout the request lifecycle.
 """
 
 from contextvars import ContextVar
-from typing import Any, Optional
+from typing import Any
 
 from loguru import logger
 
 # Type aliases for better readability
-UserID = Optional[int]
+UserID = int | None
 
 # Context variable declaration
 _current_user_id: ContextVar[UserID] = ContextVar("current_user_id", default=None)

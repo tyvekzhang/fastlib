@@ -47,7 +47,7 @@ class RedisCache(Cache):
         self,
         key: str,
         value: Any,
-        ex: Optional[int] = None,
+        ex: int | None = None,
         nx: bool = False,
         xx: bool = False,
     ) -> bool:
@@ -65,7 +65,7 @@ class RedisCache(Cache):
         except RedisError as e:
             raise CacheError(f"Failed to set key {key}", e) from e
 
-    async def get(self, key: str) -> Optional[Any]:
+    async def get(self, key: str) -> Any | None:
         """Get a value from cache."""
         try:
             return await self.redis_client.get(key)
@@ -127,7 +127,7 @@ class RedisCache(Cache):
         except RedisError as e:
             raise CacheError(f"Failed to set hash field {key} in {name}", e) from e
 
-    async def hget(self, name: str, key: str) -> Optional[Any]:
+    async def hget(self, name: str, key: str) -> Any | None:
         """Get a field from a hash."""
         try:
             return await self.redis_client.hget(name, key)
@@ -164,14 +164,14 @@ class RedisCache(Cache):
         except RedisError as e:
             raise CacheError(f"Failed to rpush values to list {name}", e) from e
 
-    async def lpop(self, name: str) -> Optional[Any]:
+    async def lpop(self, name: str) -> Any | None:
         """Pop a value from the left of a list."""
         try:
             return await self.redis_client.lpop(name)
         except RedisError as e:
             raise CacheError(f"Failed to lpop from list {name}", e) from e
 
-    async def rpop(self, name: str) -> Optional[Any]:
+    async def rpop(self, name: str) -> Any | None:
         """Pop a value from the right of a list."""
         try:
             return await self.redis_client.rpop(name)

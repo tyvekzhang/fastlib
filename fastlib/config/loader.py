@@ -2,7 +2,7 @@
 """ConfigLoader class for loading and managing application configurations from YAML files."""
 
 import os
-from typing import Any, Optional
+from typing import Any
 
 import yaml
 from loguru import logger
@@ -12,7 +12,7 @@ from fastlib.config import utils as config_util
 
 
 class ConfigLoader:
-    def __init__(self, env: str, base_config_file: Optional[str] = None) -> None:
+    def __init__(self, env: str, base_config_file: str | None = None) -> None:
         """
         Initializes a new instance of the ConfigLoader class
 
@@ -59,7 +59,7 @@ class ConfigLoader:
             except yaml.YAMLError as e:
                 raise yaml.YAMLError(f"Error parsing YAML file {file_path}: {e}") from e
 
-    def load_config(self, environment: Optional[str] = None) -> dict[str, Any]:
+    def load_config(self, environment: str | None = None) -> dict[str, Any]:
         """
         Load the base configuration and merge with environment-specific settings.
         """

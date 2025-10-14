@@ -2,15 +2,13 @@
 
 """Path utility functions for locating project directories and files."""
 
-from functools import lru_cache
 from pathlib import Path
-from typing import Optional, Union
 
 
 class PathFinder:
     """Utility class for locating project directories and files."""
 
-    def __init__(self, base_path: Optional[Path] = None):
+    def __init__(self, base_path: Path | None = None):
         """Initialize PathFinder with optional base path.
 
         Args:
@@ -21,7 +19,7 @@ class PathFinder:
         )
 
     def find_upward(
-        self, target: str, start_path: Optional[Path] = None, max_depth: int = 20
+        self, target: str, start_path: Path | None = None, max_depth: int = 20
     ) -> Path:
         """Find a file or directory by searching upward through parent directories.
 
@@ -51,7 +49,7 @@ class PathFinder:
             f"'{target}' not found within {max_depth} levels from {start_path or self.base_path}"
         )
 
-    def find_project_root(self, markers: Union[str, list[str]] = None) -> Path:
+    def find_project_root(self, markers: str | list[str] = None) -> Path:
         """Locate project root directory using marker files.
 
         Args:
@@ -102,19 +100,17 @@ _default_finder = PathFinder()
 
 
 # Convenience functions that maintain backward compatibility
-@lru_cache(maxsize=1)
 def get_utils_dir() -> str:
     """Get the absolute path of the directory containing this utils module."""
     return str(Path(__file__).resolve().parent)
 
 
-@lru_cache(maxsize=1)
 def get_resource_dir() -> str:
     """Get the absolute path of the project's resource directory."""
     try:
         # Try to find project root and construct resource path
         project_root = _default_finder.find_project_root()
-        resource_dir = project_root / "resource"
+        resource_dir = project_root / "src" / "main" / "resource"
 
         # If resource dir doesn't exist at project root, fall back to relative path
         if not resource_dir.exists():
@@ -162,7 +158,7 @@ def get_project_path(*parts: str) -> Path:
     return _default_finder.get_resource_path(*parts)
 
 
-def ensure_dir(path: Union[str, Path]) -> Path:
+def ensure_dir(path: str | Path) -> Path:
     """Ensure a directory exists, creating it if necessary.
 
     Args:

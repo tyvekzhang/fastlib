@@ -176,11 +176,9 @@ class AsyncStreamHandler(StreamHandler[T]):
                 yield item.model_dump_json(**model_dump_kwargs)
                 if isinstance(
                     item,
-                    (
-                        MessageCompletedNotify,
-                        MessageCancelledNotify,
-                        MessageFailedNotify,
-                    ),
+                    MessageCompletedNotify
+                    | MessageCancelledNotify
+                    | MessageFailedNotify,
                 ):
                     break
         finally:

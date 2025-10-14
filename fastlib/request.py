@@ -1,8 +1,6 @@
 # SPDX-License-Identifier: MIT
 """Common schema with data validation."""
 
-from typing import Optional
-
 from pydantic import BaseModel, ConfigDict, Field
 
 
@@ -30,7 +28,7 @@ class ListRequest(BaseModel):
     count: bool = Field(
         default=True, description="Whether to return total count", example=True
     )
-    sort_str: Optional[str] = Field(
+    sort_str: str | None = Field(
         default=None,
         description='Optional sorting string (e.g., "field:asc,field2:desc")',
         example="created_at:desc,name:asc",

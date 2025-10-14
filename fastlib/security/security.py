@@ -1,6 +1,7 @@
 # SPDX-License-Identifier: MIT
+from collections.abc import Callable
 from datetime import datetime, timedelta
-from typing import Any, Callable, Optional, Union
+from typing import Any
 
 import jwt
 from fastapi import Depends, HTTPException, status
@@ -88,9 +89,9 @@ def get_current_user() -> Callable[[], CurrentUser]:
 
 
 def create_token(
-    subject: Optional[Union[str, int]] = None,
-    expires_delta: Optional[timedelta] = None,
-    token_type: Optional[str] = None,
+    subject: str | int | None = None,
+    expires_delta: timedelta | None = None,
+    token_type: str | None = None,
 ) -> str:
     """Create new JWT token.
 

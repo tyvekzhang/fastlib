@@ -84,23 +84,3 @@ class Language(Enum):
     def is_supported(cls, code: str) -> bool:
         """Check if language code is supported"""
         return code in cls.supported_codes()
-
-
-# if __name__ == "__main__":
-#     # Register new languages dynamically
-#     Language.register("es", "Spanish", "Español")
-#     Language.register("ja", "Japanese", "日本語")
-#     Language.register("ar", "Arabic", "العربية", "rtl")
-
-#     # Access new languages
-#     spanish = Language.ES
-#     print(f"Spanish code: {spanish.value}")  # es
-#     print(f"Spanish native: {spanish.native_name}")  # Español
-
-#     # Check support
-#     print(Language.is_supported("fr"))  # False
-#     print(Language.is_supported("ja"))  # True
-
-#     # Get from code
-#     japanese = Language.from_code("ja")
-#     print(japanese.display_name)  # Japanese

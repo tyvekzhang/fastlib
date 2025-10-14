@@ -5,12 +5,11 @@ A comprehensive logging tool for the application.
 
 import sys
 from pathlib import Path
-from typing import Optional
 
 from loguru import logger
 
-from fastlib.config.manager import ConfigManager
 from fastlib._logging.config import LogConfig
+from fastlib.config.manager import ConfigManager
 
 
 class Logger:
@@ -19,7 +18,7 @@ class Logger:
     """
 
     _instances: dict[str, "Logger"] = {}
-    _config: Optional[LogConfig] = None
+    _config: LogConfig | None = None
     _is_configured: bool = False
 
     @classmethod
@@ -49,7 +48,7 @@ class Logger:
     @classmethod
     def get_instance(
         cls,
-        name: Optional[str] = None,
+        name: str | None = None,
     ) -> "Logger":
         """
         Get or create a named logger instance.

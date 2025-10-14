@@ -3,7 +3,6 @@
 
 import importlib
 from pathlib import Path
-from typing import Optional
 
 from loguru import logger
 
@@ -11,7 +10,7 @@ current_path = Path(__file__).resolve()
 src_parent = None
 
 for parent in current_path.parents:
-    if parent.name == "src":
+    if parent.name == ".venv":
         src_parent = parent.parent
         break
 
@@ -25,7 +24,7 @@ MODEL_PACKAGES = [model_path]
 
 
 def import_sql_models(
-    packages: Optional[list[Path]] = None,
+    packages: list[Path] | None = None,
     model_suffix_file_name: str = "_model",
     model_file_name: str = "Model",
 ) -> dict[str, type]:
@@ -37,7 +36,7 @@ def import_sql_models(
             logger.warning(f"Package directory not found: {package_dir}")
             continue
 
-        for model_file in package_dir.glob(f"*{model_suffix_file_name}.py"):
+        for model_file in package_dir.rglob(f"*{model_suffix_file_name}.py"):
             relative_path = model_file.relative_to(src_parent)
             module_path = ".".join(relative_path.with_suffix("").parts)
 

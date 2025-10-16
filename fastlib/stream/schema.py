@@ -78,6 +78,38 @@ def create_notify_message(notify_type: NotifyType) -> NotifyStreamMessage:
     )
 
 
+class MessageCancelledNotify(NotifyStreamMessage):
+    """Message cancelled notify"""
+
+    data: NotifyStreamMessageData = NotifyStreamMessageData(
+        type="message_cancelled", message="message had been cancelled"
+    )
+
+
+class MessageFailedNotify(NotifyStreamMessage):
+    """Message failed notify"""
+
+    data: NotifyStreamMessageData = NotifyStreamMessageData(
+        type="message_failed", message="message had been failed"
+    )
+
+
+class MessageCompletedNotify(NotifyStreamMessage):
+    """Message completed notify"""
+
+    data: NotifyStreamMessageData = NotifyStreamMessageData(
+        type="message_completed", message="message had been completed"
+    )
+
+
+class MessageUpdatedNotify(NotifyStreamMessage):
+    """Message updated notify"""
+
+    data: NotifyStreamMessageData = NotifyStreamMessageData(
+        type="message_updated", message="message had been updated"
+    )
+
+
 V = TypeVar("V", bound=BaseStreamMessage)
 
 
@@ -102,12 +134,12 @@ class BaseMessage(BaseModel, Generic[V]):
     created_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
     updated_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
 
-    def update_status(self, status: MessageStatus) -> None:
+    async def update_status(self, status: MessageStatus) -> None:
         """Updates the message status and the updated_at timestamp."""
         self.status = status
         self.updated_at = datetime.now(UTC)
 
-    def append_chunks(self, chunks: Iterable[V]) -> None:
+    async def append_chunks(self, chunks: Iterable[V]) -> None:
         """Appends new message chunks to the content and updates the timestamp."""
         self.content.extend(chunks)
         self.updated_at = datetime.now(UTC)

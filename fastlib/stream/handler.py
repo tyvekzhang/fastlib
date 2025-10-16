@@ -12,6 +12,7 @@ from datetime import datetime
 from typing import Generic, TypeVar
 
 from loguru import logger
+from pydantic import BaseModel
 
 from fastlib.cache.base import Cache
 from fastlib.cache.manager import get_cache_client
@@ -173,7 +174,14 @@ class AsyncStreamHandler(StreamHandler[T]):
 
             while self._task_ref and not self._task_ref.done():
                 item = await queue.get()
-                yield item.model_dump_json(**model_dump_kwargs)
+                if isinstance(item, dict):
+                    import json
+
+                    yield json.dumps(item)
+                elif isinstance(item, BaseModel):
+                    yield item.model_dump_json(**model_dump_kwargs)
+                else:
+                    yield item
                 if isinstance(
                     item,
                     MessageCompletedNotify

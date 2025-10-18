@@ -4,7 +4,7 @@
 import asyncio
 import time
 from contextlib import asynccontextmanager
-from typing import Any, Dict, Optional, Set
+from typing import Any
 
 from fastlib.cache.base import Cache, CacheError
 
@@ -13,23 +13,23 @@ class MemoryCache(Cache):
     """
     Memory-based cache implementation
     """
-    
+
     def __init__(self, namespace: str = "default"):
         self.namespace = namespace
-        self._data: Dict[str, Any] = {}
-        self._expiry: Dict[str, float] = {}
-        self._lists: Dict[str, list] = {}
-        self._sets: Dict[str, Set] = {}
-        self._hashes: Dict[str, Dict[str, Any]] = {}
-        self._locks: Dict[str, asyncio.Lock] = {}
+        self._data: dict[str, Any] = {}
+        self._expiry: dict[str, float] = {}
+        self._lists: dict[str, list] = {}
+        self._sets: dict[str, set] = {}
+        self._hashes: dict[str, dict[str, Any]] = {}
+        self._locks: dict[str, asyncio.Lock] = {}
         self._global_lock = asyncio.Lock()
-    
+
     def _is_expired(self, key: str) -> bool:
         """Check if a key has expired"""
         if key not in self._expiry:
             return False
         return time.time() > self._expiry[key]
-    
+
     def _clean_expired(self):
         """Clean up expired keys"""
         expired_keys = [k for k in self._expiry if self._is_expired(k)]
@@ -39,7 +39,7 @@ class MemoryCache(Cache):
             self._lists.pop(key, None)
             self._sets.pop(key, None)
             self._hashes.pop(key, None)
-    
+
     async def ping(self) -> bool:
         try:
             await self.set("__ping__", "pong", ex=1)
@@ -51,30 +51,30 @@ class MemoryCache(Cache):
         self,
         key: str,
         value: Any,
-        ex: Optional[int] = None,
+        ex: int | None = None,
         nx: bool = False,  # only set if not exists
         xx: bool = False,  # only set if exists
     ) -> bool:
         async with self._global_lock:
             self._clean_expired()
-            
+
             if nx and key in self._data:
                 return False
             if xx and key not in self._data:
                 return False
-            
+
             self._data[key] = value
             if ex is not None:
                 self._expiry[key] = time.time() + ex
             elif key in self._expiry:
                 del self._expiry[key]  # Remove expiration time
-            
+
             return True
 
     async def get(self, key: str) -> Any | None:
         async with self._global_lock:
             self._clean_expired()
-            
+
             if key in self._data and not self._is_expired(key):
                 return self._data[key]
             return None
@@ -115,11 +115,11 @@ class MemoryCache(Cache):
     async def incr(self, key: str, amount: int = 1) -> int:
         async with self._global_lock:
             self._clean_expired()
-            
+
             current = self._data.get(key, 0)
             if not isinstance(current, int):
                 raise CacheError("Value is not integer")
-            
+
             new_value = current + amount
             self._data[key] = new_value
             return new_value
@@ -226,9 +226,11 @@ class MemoryCache(Cache):
     ) -> bool:
         if lock_name not in self._locks:
             self._locks[lock_name] = asyncio.Lock()
-        
+
         try:
-            await asyncio.wait_for(self._locks[lock_name].acquire(), timeout=blocking_timeout)
+            await asyncio.wait_for(
+                self._locks[lock_name].acquire(), timeout=blocking_timeout
+            )
             return True
         except asyncio.TimeoutError:
             return False
@@ -257,7 +259,7 @@ class MemoryCache(Cache):
         self._sets.clear()
         self._hashes.clear()
         self._locks.clear()
-    
+
     def clear(self) -> None:
         """Clear all cached data"""
         self._data.clear()

@@ -25,7 +25,6 @@ def register_router(
     api_version: str = "/v1",
     module_base_prefix: str = "src",
     module_separator: str = ".",
-    controller_file_pattern_template: str = "*_{}.py",
 ) -> APIRouter:
     """Register routers recursively from controller directories.
 

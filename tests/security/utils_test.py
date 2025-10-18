@@ -6,7 +6,7 @@ import pytest
 from fastlib.config.manager import ConfigManager
 
 ConfigManager.initialize_global_config()
-from fastlib.security.utils import (  # noqa: E402
+from fastlib.utils.security_util import (  # noqa: E402
     Ed25519Signer,
     HMACSigner,
     RSASigner,

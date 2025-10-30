@@ -9,12 +9,11 @@ import asyncio
 from abc import ABC, abstractmethod
 from collections.abc import AsyncIterable
 from datetime import datetime
-from typing import Generic, TypeVar
+from typing import Any, Generic, TypeVar
 
 from loguru import logger
 from pydantic import BaseModel
 
-from fastlib.cache.base import Cache
 from fastlib.cache.manager import get_cache_client
 
 from .schema import (
@@ -37,7 +36,7 @@ class StreamHandler(ABC, Generic[T]):
         self,
         message: T,
         source: AsyncIterable[V],
-        storage: Cache | None,
+        storage: Any,
     ):
         self._message = message
         self._source = source
@@ -79,7 +78,7 @@ class AsyncStreamHandler(StreamHandler[T]):
         self,
         message: T,
         source: AsyncIterable[V],
-        storage: Cache | None,
+        storage: Any,
         buffer_size: int = 100,
     ):
         super().__init__(message, source, storage)

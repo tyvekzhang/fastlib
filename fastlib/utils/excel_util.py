@@ -7,12 +7,13 @@ from contextlib import contextmanager
 from datetime import datetime
 
 import pandas as pd
-from loguru import logger
 from openpyxl.styles import Alignment, Font, PatternFill
 from openpyxl.utils import get_column_letter
 from openpyxl.worksheet.worksheet import Worksheet
 from pydantic import BaseModel
 from starlette.responses import StreamingResponse
+
+from fastlib.logging.handlers import logger
 
 
 class ExcelExporter:

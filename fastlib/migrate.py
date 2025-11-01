@@ -4,7 +4,7 @@
 import importlib
 from pathlib import Path
 
-from loguru import logger
+from fastlib.logging.handlers import logger
 
 current_path = Path(__file__).resolve()
 src_parent = None

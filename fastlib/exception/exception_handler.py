@@ -11,12 +11,12 @@ from fastapi.exception_handlers import http_exception_handler
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse, Response
 from fastapi.utils import is_body_allowed_for_status_code
-from loguru import logger
 from pydantic_core._pydantic_core import ValidationError  # noqa
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from fastlib import ConfigManager
 from fastlib.exception import BaseException
+from fastlib.logging.handlers import logger
 
 
 async def extract_request_data(request: Request) -> dict[str, Any]:

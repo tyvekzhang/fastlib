@@ -18,13 +18,13 @@ from typing import (
 )
 
 import anyio
-from loguru import logger
 from starlette.background import BackgroundTask
 from starlette.concurrency import iterate_in_threadpool
 from starlette.datastructures import MutableHeaders
 from starlette.responses import Response
 from starlette.types import Message, Receive, Scope, Send
 
+from fastlib.logging.handlers import logger
 from fastlib.stream.event import ServerSentEvent, ensure_bytes
 
 # Context variable for exit events per event loop
@@ -176,7 +176,6 @@ class EventSourceResponse(Response):
 
         async for data in self.body_iterator:
             chunk = ensure_bytes(data, self.sep)
-            logger.debug("chunk: %s", chunk)
             with anyio.move_on_after(self.send_timeout) as cancel_scope:
                 await send(
                     {"type": "http.response.body", "body": chunk, "more_body": True}
@@ -233,7 +232,6 @@ class EventSourceResponse(Response):
                 )
             )
             ping_bytes = ensure_bytes(sse_ping, self.sep)
-            logger.debug("ping: %s", ping_bytes)
 
             async with self._send_lock:
                 if self.active:

@@ -1,4 +1,5 @@
 from .base import BaseConfig
-from .manager import ConfigManager, config_class
+from .decorator import config_class
+from .manager import ConfigManager
 
 __all__ = ["BaseConfig", "ConfigManager", "config_class"]

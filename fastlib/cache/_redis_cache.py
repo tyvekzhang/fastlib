@@ -2,17 +2,15 @@
 """Redis cache implementation"""
 
 import asyncio
-from typing import Optional
-
-from loguru import logger
-
 import json
-from datetime import datetime, date
-from typing import Any, Type
-from redis._parsers.encoders import Encoder
+from datetime import date, datetime
+from typing import Any, Optional
+
 from pydantic import BaseModel
+from redis._parsers.encoders import Encoder
 
 from fastlib import ConfigManager
+from fastlib.logging.handlers import logger
 
 try:
     import redis.asyncio as redis
@@ -31,7 +29,7 @@ except Exception:
 class CustomJsonEncoder(Encoder):
     def encode(self, value: Any):
         """Extended encoding to support datetime and Pydantic models."""
-        if isinstance(value, (datetime, date)):
+        if isinstance(value, datetime | date):
             return json.dumps(
                 {
                     "__type__": "datetime",
@@ -72,7 +70,7 @@ class CustomJsonEncoder(Encoder):
 
                             # Dynamically import model class
                             module = __import__(module_name, fromlist=[model_name])
-                            model_cls: Type[BaseModel] = getattr(module, model_name)
+                            model_cls: type[BaseModel] = getattr(module, model_name)
                             return model_cls(**payload)
 
                     return data

@@ -6,13 +6,13 @@ from enum import Enum
 
 from fastapi import Request
 from jwt.exceptions import PyJWTError
-from loguru import logger
 from starlette.responses import JSONResponse
 
 from fastlib import ConfigManager, security
 from fastlib import constants as constant
 from fastlib.contextvars import clear_current_user, set_current_user
 from fastlib.enums import MediaTypeEnum
+from fastlib.logging.handlers import logger
 from fastlib.schema import UserCredential
 
 # Load configuration

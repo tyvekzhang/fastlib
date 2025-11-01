@@ -11,10 +11,10 @@ from collections.abc import AsyncIterable
 from datetime import datetime
 from typing import Any, Generic, TypeVar
 
-from loguru import logger
 from pydantic import BaseModel
 
 from fastlib.cache.manager import get_cache_client
+from fastlib.logging.handlers import logger
 
 from .schema import (
     BaseMessage,

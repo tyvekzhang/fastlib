@@ -1,6 +1,6 @@
 [project]
 name = "fastlib-py"
-version = "0.3.8"
+version = "0.4.0"
 description = "Fastlib, high performance, easy to use, fast to code, ready for production"
 readme = "README.md"
 keywords = [
@@ -32,6 +32,7 @@ dependencies = [
   "aiosqlite>=0.21",
   "alembic>=1.15.2",
   "fastapi[standard]>=0.115.12",
+  "loguru>=0.7.3",
   "openpyxl>=3.1.5",
   "pandas>=2.2.3",
   "pyjwt[crypto]>=2.10.1",
@@ -116,6 +117,6 @@ title = "FastLib Coverage Report"
 strict = true
 
 [[tool.uv.index]]
-name = "ustc"
-url = "https://pypi.mirrors.ustc.edu.cn/simple/"
+name = "huaweicloud"
+url = "https://repo.huaweicloud.com/repository/pypi/simple/"
 default = true

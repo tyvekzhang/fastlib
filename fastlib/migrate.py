@@ -4,8 +4,6 @@
 import importlib
 from pathlib import Path
 
-from fastlib.logging.handlers import logger
-
 current_path = Path(__file__).resolve()
 src_parent = None
 
@@ -33,7 +31,7 @@ def import_sql_models(
 
     for package_dir in packages_to_scan:
         if not package_dir.exists():
-            logger.warning(f"Package directory not found: {package_dir}")
+            print(f"Package directory not found: {package_dir}")
             continue
 
         for model_file in package_dir.rglob(f"*{model_suffix_file_name}.py"):
@@ -47,9 +45,9 @@ def import_sql_models(
                         imported_models[name] = getattr(module, name)
 
             except ImportError as e:
-                logger.error(f"Failed to import {module_path}: {e}")
+                print(f"Failed to import {module_path}: {e}")
             except Exception:
-                logger.exception(f"Error processing {model_file}")
+                print(f"Error processing {model_file}")
 
     return imported_models
 

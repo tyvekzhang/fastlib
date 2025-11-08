@@ -1,42 +1,36 @@
 [project]
 name = "fastlib-py"
-version = "0.4.2"
+version = "0.4.3"
 description = "Fastlib, high performance, easy to use, fast to code, ready for production"
 readme = "README.md"
-keywords = [
-  "fastapi",
-  "library",
-  "sqlmodel",
-  "web",
-]
+keywords = ["fastapi", "library", "sqlmodel", "web"]
 license = "MIT"
-maintainers = [
-  { name = "tyvekZhang", email = "tyvekzhang@gmail.com" },
-]
-authors = [
-  { name = "tyvekZhang", email = "tyvekzhang@gmail.com" },
-]
-requires-python = ">=3.10"
+maintainers = [{ name = "tyvekZhang", email = "tyvekzhang@gmail.com" }]
+authors = [{ name = "tyvekZhang", email = "tyvekzhang@gmail.com" }]
+requires-python = ">=3.11"
 classifiers = [
   "Development Status :: 4 - Beta",
   "Programming Language :: Python",
   "Programming Language :: Python :: 3 :: Only",
-  "Programming Language :: Python :: 3.10",
   "Programming Language :: Python :: 3.11",
   "Programming Language :: Python :: 3.12",
   "Programming Language :: Python :: 3.13",
+  "Programming Language :: Python :: 3.14",
   "Programming Language :: Python :: Implementation :: CPython",
   "Programming Language :: Python :: Implementation :: PyPy",
 ]
 dependencies = [
   "aiosqlite>=0.21",
   "alembic>=1.15.2",
-  "fastapi[standard]>=0.115.12",
+  "fastapi>=0.121.0",
+  "httpx>=0.28.1",
   "loguru>=0.7.3",
   "openpyxl>=3.1.5",
   "pandas>=2.2.3",
   "pyjwt[crypto]>=2.10.1",
+  "python-multipart>=0.0.20",
   "sqlmodel>=0.0.24",
+  "uvicorn[standard]>=0.38.0",
 ]
 
 urls.Homepage = "https://github.com/tyvekzhang/fastlib"
@@ -50,16 +44,19 @@ dev = [
   "pytest-asyncio>=1.1",
 ]
 
-docs = [
-  "sphinx>=7.2.6",
-  "sphinx-rtd-theme>=2",
-]
+docs = ["sphinx>=7.2.6", "sphinx-rtd-theme>=2"]
+
+[project.optional-dependencies]
+mysql = ["aiomysql>=0.3.2"]
+
+pgsql = ["asyncpg>=0.30.0"]
+
 
 [tool.ruff]
 line-length = 88
 
-include = [ "fastlib/**/*.py", "main.py" ]
-exclude = [ "doc/**/*.py" ]
+include = ["fastlib/**/*.py", "main.py"]
+exclude = ["doc/**/*.py"]
 
 lint.select = [
   "B",  # flake8-bugbear
@@ -97,11 +94,10 @@ lint.pyupgrade.keep-runtime-typing = true
 
 [tool.coverage.run]
 data_file = "coverage/.coverage"
-source = [ "fastlib" ]
+source = ["fastlib"]
 context = '${CONTEXT}'
 dynamic_context = "test_function"
-omit = [
-]
+omit = []
 
 [tool.coverage.report]
 fail_under = 90

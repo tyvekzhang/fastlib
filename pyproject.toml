@@ -22,11 +22,13 @@ classifiers = [
 dependencies = [
   "aiosqlite>=0.21",
   "alembic>=1.15.2",
+  "bcrypt==4.3.0",
   "fastapi>=0.121.0",
   "httpx>=0.28.1",
   "loguru>=0.7.3",
   "openpyxl>=3.1.5",
   "pandas>=2.2.3",
+  "passlib[bcrypt]>=1.7.4",
   "pyjwt[crypto]>=2.10.1",
   "python-multipart>=0.0.20",
   "sqlmodel>=0.0.24",

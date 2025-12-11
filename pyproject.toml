@@ -1,6 +1,6 @@
 [project]
 name = "fastlib-py"
-version = "0.4.5"
+version = "0.4.6"
 description = "Fastlib, high performance, easy to use, fast to code, ready for production"
 readme = "README.md"
 keywords = ["fastapi", "library", "sqlmodel", "web"]

@@ -1,65 +1,77 @@
-"""Snowflake utils to generate unique id"""
+"""
+Snowflake utils to generate unique id
+"""
 
 import os
 import time
+import threading
 from typing import Generator
 
-API_EPOCH = 1730438845
+
+API_EPOCH = 1730438845000
 
 worker_id_bits = 5
 process_id_bits = 5
-max_worker_id = -1 ^ (-1 << worker_id_bits)
-max_process_id = -1 ^ (-1 << process_id_bits)
 sequence_bits = 12
-process_id_shift = sequence_bits + worker_id_bits
-worker_id_shift = sequence_bits
-timestamp_left_shift = sequence_bits + worker_id_bits + process_id_bits
-sequence_mask = -1 ^ (-1 << sequence_bits)
 
+max_worker_id = (1 << worker_id_bits) - 1
+max_process_id = (1 << process_id_bits) - 1
+sequence_mask = (1 << sequence_bits) - 1
+
+worker_id_shift = sequence_bits
+process_id_shift = sequence_bits + worker_id_bits
+timestamp_left_shift = sequence_bits + worker_id_bits + process_id_bits
+
+
+# =========================
+# Snowflake Generator
+# =========================
 
 def generator(
     worker_id: int = 1,
-    process_id: int = os.getpid() % 31,
-    sleep=lambda x: time.sleep(x),
+    process_id: int = os.getpid() & max_process_id,
 ) -> Generator[int, None, None]:
     """
     Generates unique snowflake IDs.
-
-    :param worker_id: Worker ID (default: 1)
-    :param process_id: Process ID (default: current process ID modulo 31)
-    :param sleep: Sleep function (default: `time.sleep`)
-    :return: Generator of snowflake IDs
     """
     assert 0 <= worker_id <= max_worker_id
     assert 0 <= process_id <= max_process_id
 
     last_timestamp = -1
     sequence = 0
+    lock = threading.Lock()
+
+    def current_millis():
+        return int(time.time() * 1000)
+
+    def wait_next_millis(ts):
+        while True:
+            now = current_millis()
+            if now > ts:
+                return now
 
     while True:
-        timestamp = int(time.time())
+        with lock:
+            timestamp = current_millis()
 
-        if last_timestamp > timestamp:
-            sleep(last_timestamp - timestamp)
-            continue
+            if timestamp < last_timestamp:
+                raise RuntimeError("Clock moved backwards")
 
-        if last_timestamp == timestamp:
-            sequence = (sequence + 1) & sequence_mask
-            if sequence == 0:
-                sequence = -1 & sequence_mask
-                sleep(1)
-                continue
-        else:
-            sequence = 0
+            if timestamp == last_timestamp:
+                sequence = (sequence + 1) & sequence_mask
+                if sequence == 0:
+                    timestamp = wait_next_millis(timestamp)
+            else:
+                sequence = 0
 
-        last_timestamp = timestamp
+            last_timestamp = timestamp
 
-        yield (
-            ((timestamp - API_EPOCH) << timestamp_left_shift)
-            | (process_id << process_id_shift)
-            | (worker_id << worker_id_shift)
-            | sequence
-        )
+            yield (
+                ((timestamp - API_EPOCH) << timestamp_left_shift)
+                | (process_id << process_id_shift)
+                | (worker_id << worker_id_shift)
+                | sequence
+            )
 
 
 global_generator = generator()
@@ -68,8 +80,5 @@ global_generator = generator()
 def snowflake_id() -> int:
     """
     Returns a unique snowflake ID.
-
-    :return: Snowflake ID
     """
-    time.sleep(0.01)
     return next(global_generator)

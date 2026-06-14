@@ -37,12 +37,12 @@ def decode_jwt_token(token: str) -> dict[str, Any]:
         )
     except InvalidTokenError as err:
         raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
+            status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Token has expired. Please log in again.",
         ) from err
     except Exception as err:
         raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
+            status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Could not validate credentials.",
         ) from err
 

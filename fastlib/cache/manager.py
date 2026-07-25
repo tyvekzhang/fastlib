@@ -13,9 +13,9 @@ async def get_cache_client():
     config = ConfigManager.get_database_config()
 
     if config.enable_redis:
-        from fastlib.cache._redis_cache import RedisManager
+        from fastlib.cache._redis_cache import RedisCacheManager
 
-        redis_client = await RedisManager.get_instance()
+        redis_client = await RedisCacheManager.get_instance()
         return redis_client
     else:
         from fastlib.cache._memony_cache import MemoryCacheManager

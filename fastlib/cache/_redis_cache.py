@@ -101,7 +101,7 @@ class RedisCacheManager:
                 if cls._connection_pool is None:
                     database_config = ConfigManager.get_database_config()
                     cls._connection_pool = redis.ConnectionPool.from_url(
-                        f"redis://:{database_config.cache_pass}@{database_config.cache_host}:{database_config.cache_port}/{database_config.db_num}",
+                        f"redis://:{database_config.cache_pass}@{database_config.cache_host}:{database_config.cache_port}/{database_config.cache_db_num}",
                         encoder_class=CustomJsonEncoder,
                         encoding="utf-8",
                         encoding_errors="strict",

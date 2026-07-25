@@ -179,19 +179,21 @@ async def custom_exception_handler(request: Request, exc: BaseException):
     log_exception(exc, request_info)
     error_info = exc.code
     error_code = error_info.code
+    error_payload: dict = {
+        "code": error_code,
+        "message": exc.message,
+    }
+    if getattr(exc, "details", None) is not None:
+        error_payload["details"] = exc.details
+
     if is_auth_errors_code(error_code):
         return JSONResponse(
             status_code=HTTPStatus.UNAUTHORIZED.value,
-            content={"code": error_code, "message": exc.message},
+            content=error_payload,
         )
 
     return JSONResponse(
-        content={
-            "error": {
-                "code": error_code,
-                "message": exc.message,
-            }
-        }
+        content={"error": error_payload}
     )
 
 

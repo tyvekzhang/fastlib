@@ -8,7 +8,7 @@ from pathlib import Path
 
 from loguru import logger
 
-from fastlib._logging.config import LogConfig
+from fastlib.config._log_config import LogConfig
 from fastlib.config.manager import ConfigManager
 
 
@@ -42,7 +42,7 @@ class Logger:
     def _get_config(cls) -> LogConfig:
         """Lazy load configuration."""
         if cls._config is None:
-            cls._config = ConfigManager.get_config_instance("log")
+            cls._config = ConfigManager.get_log_config()
         return cls._config
 
     @classmethod

@@ -12,9 +12,10 @@ import traceback
 from pathlib import Path
 
 from fastapi import APIRouter
-from loguru import logger
 
 from fastlib.utils import str_util
+
+from .logging.handlers import logger
 
 
 def register_router(

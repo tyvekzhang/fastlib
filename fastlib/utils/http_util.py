@@ -12,7 +12,8 @@ import uuid
 from typing import Any
 
 import httpx
-from loguru import logger
+
+from fastlib.logging.handlers import logger
 
 
 class HTTPError(Exception):

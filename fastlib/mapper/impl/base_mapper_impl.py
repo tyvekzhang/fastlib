@@ -208,6 +208,14 @@ class SqlModelMapper(BaseMapper, Generic[ModelType]):
             for column, value in kwargs[FilterOperators.LIKE].items():
                 safe_value = f"{str(value)}%"
                 query = query.filter(getattr(self.model, column).like(safe_value))
+        if FilterOperators.IN in kwargs:
+            for column, values in kwargs[FilterOperators.IN].items():
+                if values:
+                    query = query.filter(getattr(self.model, column).in_(values))
+        if FilterOperators.NOT_IN in kwargs:
+            for column, values in kwargs[FilterOperators.NOT_IN].items():
+                if values:
+                    query = query.filter(getattr(self.model, column).notin_(values))
 
         return query, resolved_fields
 
@@ -549,7 +557,7 @@ class SqlModelMapper(BaseMapper, Generic[ModelType]):
         # Query children for the current level
         stmt = select(self.model).where(self.model.parent_id.in_(parent_ids))
         result = await db_session.exec(stmt)
-        children = result.scalars().all()
+        children = result.all()
 
         # Convert ORM children to SchemaType instances
         children_schema = [

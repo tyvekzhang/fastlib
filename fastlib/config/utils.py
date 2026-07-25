@@ -6,8 +6,6 @@ from pathlib import Path
 from typing import Any, NamedTuple
 from urllib.parse import urlparse
 
-from loguru import logger
-
 from fastlib.enums import DBTypeEnum
 from fastlib.utils import file_util
 
@@ -16,8 +14,8 @@ try:
 except ModuleNotFoundError:
     import toml as tomllib
 except Exception:
-    logger.error(
-        "Cannot find tomllib module, please install it via `uv add tomllib` or `pip install tomllib`"
+    print(
+        "Cannot find toml module, please install it via `uv add toml` or `pip install toml`"
     )
 
 
@@ -175,7 +173,7 @@ def get_db_url() -> str:
     try:
         return get_alembic_db_info(file_util.get_file_path("alembic.ini")).full_url
     except FileNotFoundError:
-        logger.warning("Can not found alembic.ini in the project, use default db url")
+        print("Can not found alembic.ini in the project, use default db url")
         return "sqlite+aiosqlite:///./fastlib.db"
 
 

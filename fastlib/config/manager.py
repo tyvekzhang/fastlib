@@ -7,32 +7,12 @@ from typing import Any
 from fastlib import constants as constant
 from fastlib.config import utils as config_util
 from fastlib.config._database_config import DatabaseConfig
+from fastlib.config._log_config import LogConfig
 from fastlib.config._security_config import SecurityConfig
 from fastlib.config._server_config import ServerConfig
 from fastlib.config.base import BaseConfig
 from fastlib.config.loader import ConfigLoader
 from fastlib.config.registry import ConfigRegistry
-
-
-# Decorator for easy registration
-def config_class(name: str):
-    """
-    Decorator to register a configuration class.
-
-    Args:
-        name: The name to register the configuration under
-
-    Usage:
-        @config_class("my_config")
-        class MyConfig(BaseConfig):
-            pass
-    """
-
-    def decorator(cls: type[BaseConfig]):
-        ConfigRegistry.register(name, cls)
-        return cls
-
-    return decorator
 
 
 class ConfigManager:
@@ -108,6 +88,7 @@ class ConfigManager:
             "server": ServerConfig,
             "database": DatabaseConfig,
             "security": SecurityConfig,
+            "log": LogConfig,
         }
 
         for name, config_class in default_configs.items():
@@ -192,6 +173,19 @@ class ConfigManager:
         instance = ConfigManager.get_config_instance("security")
         if not isinstance(instance, SecurityConfig):
             raise RuntimeError("Security configuration not properly initialized")
+        return instance
+
+    @staticmethod
+    def get_log_config() -> LogConfig:
+        """
+        Get the log configuration.
+
+        Returns:
+            LogConfig: The log configuration object
+        """
+        instance = ConfigManager.get_config_instance("log")
+        if not isinstance(instance, LogConfig):
+            raise RuntimeError("Log configuration not properly initialized")
         return instance
 
     @staticmethod

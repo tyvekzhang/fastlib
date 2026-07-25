@@ -8,7 +8,7 @@ the current authenticated user's ID throughout the request lifecycle.
 from contextvars import ContextVar
 from typing import Any
 
-from loguru import logger
+from fastlib.logging.handlers import logger
 
 # Type aliases for better readability
 UserID = int | None

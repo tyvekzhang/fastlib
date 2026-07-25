@@ -148,3 +148,5 @@ class FilterOperators:
     LE = "LE"
     BETWEEN = "BETWEEN"
     LIKE = "LIKE"
+    IN = "IN"
+    NOT_IN = "NOT_IN"

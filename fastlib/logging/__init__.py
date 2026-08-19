@@ -3,8 +3,13 @@
 
 from .handlers import Logger
 
-logger = Logger.initialize()
-
 __all__ = [
+    "Logger",
     "logger",
 ]
+
+
+def __getattr__(name: str) -> Logger:
+    if name == "logger":
+        return Logger.initialize()
+    raise AttributeError(f"module {__name__!r} has no attribute {name!r}")

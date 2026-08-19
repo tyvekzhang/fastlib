@@ -14,7 +14,7 @@ from fastlib.config.manager import ConfigManager
 
 class Logger:
     """
-    Enhanced logging tool support structured logging.
+    Enhanced logging tool with loguru-compatible ``str.format`` messages.
     """
 
     _instances: dict[str, "Logger"] = {}
@@ -137,30 +137,53 @@ class Logger:
 
         return config.default_format
 
-    # Convenience methods for logging
-    def debug(self, message: str, **kwargs) -> None:
-        """Log debug message."""
-        logger.bind(logger_name=self.name).debug(message, **kwargs)
+    def _bound(self):
+        """Return a loguru logger bound to this instance.
 
-    def info(self, message: str, **kwargs) -> None:
-        """Log info message."""
-        logger.bind(logger_name=self.name).info(message, **kwargs)
+        ``opt(depth=1)`` skips this wrapper so ``{name}:{function}:{line}``
+        points at the caller, matching loguru's own logging methods.
+        """
+        return logger.bind(logger_name=self.name).opt(depth=1)
 
-    def warning(self, message: str, **kwargs) -> None:
-        """Log warning message."""
-        logger.bind(logger_name=self.name).warning(message, **kwargs)
+    def bind(self, **kwargs):
+        """Bind extra fields onto the loguru ``extra`` dict, like ``logger.bind()``."""
+        return logger.bind(logger_name=self.name, **kwargs)
 
-    def error(self, message: str, **kwargs) -> None:
-        """Log error message."""
-        logger.bind(logger_name=self.name).error(message, **kwargs)
+    def trace(self, message: str, *args, **kwargs) -> None:
+        """Log ``message.format(*args, **kwargs)`` with severity ``TRACE``."""
+        self._bound().trace(message, *args, **kwargs)
 
-    def critical(self, message: str, **kwargs) -> None:
-        """Log critical message."""
-        logger.bind(logger_name=self.name).critical(message, **kwargs)
+    def debug(self, message: str, *args, **kwargs) -> None:
+        """Log ``message.format(*args, **kwargs)`` with severity ``DEBUG``."""
+        self._bound().debug(message, *args, **kwargs)
 
-    def exception(self, message: str, **kwargs) -> None:
-        """Log exception with traceback."""
-        logger.bind(logger_name=self.name).exception(message, **kwargs)
+    def info(self, message: str, *args, **kwargs) -> None:
+        """Log ``message.format(*args, **kwargs)`` with severity ``INFO``."""
+        self._bound().info(message, *args, **kwargs)
+
+    def success(self, message: str, *args, **kwargs) -> None:
+        """Log ``message.format(*args, **kwargs)`` with severity ``SUCCESS``."""
+        self._bound().success(message, *args, **kwargs)
+
+    def warning(self, message: str, *args, **kwargs) -> None:
+        """Log ``message.format(*args, **kwargs)`` with severity ``WARNING``."""
+        self._bound().warning(message, *args, **kwargs)
+
+    def error(self, message: str, *args, **kwargs) -> None:
+        """Log ``message.format(*args, **kwargs)`` with severity ``ERROR``."""
+        self._bound().error(message, *args, **kwargs)
+
+    def critical(self, message: str, *args, **kwargs) -> None:
+        """Log ``message.format(*args, **kwargs)`` with severity ``CRITICAL``."""
+        self._bound().critical(message, *args, **kwargs)
+
+    def exception(self, message: str, *args, **kwargs) -> None:
+        """Log ``message.format(*args, **kwargs)`` as ``ERROR`` with traceback."""
+        self._bound().exception(message, *args, **kwargs)
+
+    def log(self, level, message: str, *args, **kwargs) -> None:
+        """Log ``message.format(*args, **kwargs)`` with the given severity."""
+        self._bound().log(level, message, *args, **kwargs)
 
     @classmethod
     def reset(cls) -> None:

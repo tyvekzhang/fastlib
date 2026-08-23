@@ -7,12 +7,7 @@ from sqlalchemy.engine import Engine
 from sqlalchemy.engine.url import URL
 from sqlalchemy.ext.asyncio import create_async_engine
 from sqlmodel.ext.asyncio.session import AsyncSession
-from starlette.middleware.base import (
-    BaseHTTPMiddleware,
-    RequestResponseEndpoint,
-)
-from starlette.requests import Request
-from starlette.types import ASGIApp
+from starlette.types import ASGIApp, Receive, Scope, Send
 
 try:
     from sqlalchemy.ext.asyncio import async_sessionmaker
@@ -25,8 +20,15 @@ def create_middleware_and_session_proxy():
     _Session: async_sessionmaker | None = None
     _session: ContextVar[AsyncSession | None] = ContextVar("_session", default=None)
 
-    class SQLAlchemyMiddleware(BaseHTTPMiddleware):
-        """Middleware for managing SQLAlchemy sessions in FastAPI applications."""
+    class SQLAlchemyMiddleware:
+        """
+        Pure ASGI middleware that keeps one AsyncSession alive for the full
+        request — including StreamingResponse / SSE body iteration.
+
+        BaseHTTPMiddleware closes the session as soon as response.start is
+        sent, which races with generators still using db.session (SQLAlchemy
+        isce: close() while _connection_for_bind() is in progress).
+        """
 
         def __init__(
             self,
@@ -38,7 +40,7 @@ def create_middleware_and_session_proxy():
             commit_on_exit: bool = True,
         ):
             """Initialize the middleware with database configuration."""
-            super().__init__(app)
+            self.app = app
             self.commit_on_exit = commit_on_exit
             engine_args = engine_args or {}
             session_args = session_args or {}
@@ -60,10 +62,13 @@ def create_middleware_and_session_proxy():
                 **session_args,
             )
 
-        async def dispatch(self, request: Request, call_next: RequestResponseEndpoint):
-            """Manage database session for each request."""
+        async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
+            if scope["type"] != "http":
+                await self.app(scope, receive, send)
+                return
+
             async with DBSession(commit_on_exit=self.commit_on_exit):
-                return await call_next(request)
+                await self.app(scope, receive, send)
 
     class DBSessionMeta(type):
         """Metaclass for DBSession providing session property."""
@@ -86,6 +91,7 @@ def create_middleware_and_session_proxy():
         def __init__(self, session_args: dict = None, commit_on_exit: bool = False):
             """Initialize session context manager."""
             self.token = None
+            self._owned_session: AsyncSession | None = None
             self.session_args = session_args or {}
             self.commit_on_exit = commit_on_exit
 
@@ -94,12 +100,19 @@ def create_middleware_and_session_proxy():
             if _Session is None:
                 raise RuntimeError("Session is not initialised")
 
-            self.token = _session.set(_Session(**self.session_args))  # type: ignore
+            self._owned_session = _Session(**self.session_args)  # type: ignore
+            self.token = _session.set(self._owned_session)
             return type(self)
 
         async def __aexit__(self, exc_type, exc_value, traceback):
             """Exit session context, handling commit/rollback."""
-            session = _session.get()
+            # Always close the session this context created — never the nested
+            # current ContextVar value (which may belong to an inner async with db()).
+            session = self._owned_session
+            if session is None:
+                if self.token is not None:
+                    _session.reset(self.token)
+                return
 
             try:
                 if exc_type is not None:
@@ -108,7 +121,9 @@ def create_middleware_and_session_proxy():
                     await session.commit()
             finally:
                 await session.close()
-                _session.reset(self.token)
+                if self.token is not None:
+                    _session.reset(self.token)
+                self._owned_session = None
 
     return SQLAlchemyMiddleware, DBSession
 

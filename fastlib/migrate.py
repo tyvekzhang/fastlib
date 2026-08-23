@@ -15,10 +15,13 @@ for parent in current_path.parents:
 if not src_parent:
     raise FileNotFoundError("Can not found src dir")
 
-model_path = src_parent / "src" / "main" / "app" / "model"
+# Legacy layout: src/main/app/model
+# Domain layout (ginvest): src/main/app/domains/*/model
+legacy_model_path = src_parent / "src" / "main" / "app" / "model"
+domains_model_path = src_parent / "src" / "main" / "app" / "domains"
 
 # List of directories to scan for model files
-MODEL_PACKAGES = [model_path]
+MODEL_PACKAGES = [legacy_model_path, domains_model_path]
 
 
 def import_sql_models(

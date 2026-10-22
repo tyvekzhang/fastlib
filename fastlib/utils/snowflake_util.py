@@ -75,10 +75,14 @@ def generator(
 
 
 global_generator = generator()
+# A generator can't be resumed by two threads at once ("generator already executing");
+# the lock inside generator() only guards its body, so serialize next() here.
+_global_lock = threading.Lock()
 
 
 def snowflake_id() -> int:
     """
-    Returns a unique snowflake ID.
+    Returns a unique snowflake ID. Thread-safe.
     """
-    return next(global_generator)
+    with _global_lock:
+        return next(global_generator)
